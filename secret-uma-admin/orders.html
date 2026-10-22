@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<base href="/secret-uma-admin/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Orders - Uma's Fashion Wear</title>
@@ -201,7 +202,8 @@ window.deleteOrder = async function(orderId) {
 window.printInvoice = function(orderId) {
   const orderCard = document.getElementById(`order_${orderId}`);
   const printWindow = window.open('', '', 'height=600,width=800');
-  printWindow.document.write('<html><head><title>Invoice</title>');
+  printWindow.document.write('<html><head>
+<base href="/secret-uma-admin/"><title>Invoice</title>');
   printWindow.document.write('<style>body{font-family:sans-serif;padding:20px;} .header{text-align:center;margin-bottom:30px;} .header h1{margin:0;} .details{margin-bottom:20px;} .details p{margin:5px 0;} table{width:100%;border-collapse:collapse;margin-top:20px;} th,td{border:1px solid #ddd;padding:10px;text-align:left;} th{background:#f9f9f9;} .order-header button{display:none;} .admin-note-box{display:none;} .order-actions{display:none;}</style>');
   printWindow.document.write('</head><body>');
   printWindow.document.write('<div class="header"><h1>Uma\'s Fashion Wear</h1><p>Kathmandu, Nepal | 9851169457</p></div>');
