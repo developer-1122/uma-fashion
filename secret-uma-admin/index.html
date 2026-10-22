@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uma's Fashion Wear - Admin Login</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="login-box">
+  <h1>Uma's Admin</h1>
+  <button id="githubLogin">Login with GitHub</button>
+  <p id="error"></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+document.getElementById('githubLogin').addEventListener('click', async () => {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'github',
+    options: {
+      redirectTo: window.location.origin + '/admin/dashboard.html'
+    }
+  })
+  if (error) {
+    document.getElementById('error').textContent = 'GitHub login failed: ' + error.message
+  }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slider - Uma's Fashion Wear</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="dashboard">
+  <header>
+    <h1>Uma's Fashion Wear - Admin</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="orders.html">Orders</a>
+    <a href="banners.html" class="active">Slider</a>
+    <a href="coupons.html">Coupons</a>
+  </nav>
+  <main>
+    <h2>Manage Home Slider</h2>
+    <form id="bannerForm" class="product-form">
+      <input type="text" id="bTitle" placeholder="Title (e.g. Big Fashion Sale)" required>
+      <input type="text" id="bSubtitle" placeholder="Subtitle (e.g. Flat 50% Off)" required>
+      <input type="file" id="bFile" accept="image/*" required>
+      <button type="submit" id="saveBtn">Upload Banner</button>
+    </form>
+
+    <h2 style="margin-top: 30px;">All Banners</h2>
+    <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading banners...</p>
+    <div id="bannerList"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (!session || session.user.email !== 'donnhero6@gmail.com') {
+    window.location.href = 'index.html';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+document.getElementById('bannerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.textContent = 'Uploading...';
+  saveBtn.disabled = true;
+
+  const title = document.getElementById('bTitle').value;
+  const subtitle = document.getElementById('bSubtitle').value;
+  const file = document.getElementById('bFile').files[0];
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `banner_${Date.now()}.${fileExt}`;
+  
+  const { error: uploadError } = await supabaseClient.storage.from('product-media').upload(fileName, file);
+
+  if (uploadError) {
+    alert('Upload Error: ' + uploadError.message);
+    saveBtn.textContent = 'Upload Banner';
+    saveBtn.disabled = false;
+    return;
+  }
+
+  const { data: publicUrlData } = supabaseClient.storage.from('product-media').getPublicUrl(fileName);
+  const imageUrl = publicUrlData.publicUrl;
+
+  const { error } = await supabaseClient.from('banners').insert([{
+    title, subtitle, image_url: imageUrl
+  }]);
+
+  if (error) {
+    alert('Database Error: ' + error.message);
+  } else {
+    document.getElementById('bannerForm').reset();
+    loadBanners();
+  }
+  
+  saveBtn.textContent = 'Upload Banner';
+  saveBtn.disabled = false;
+});
+
+async function loadBanners() {
+  const { data } = await supabaseClient.from('banners').select('*').order('created_at', { ascending: false });
+  const list = document.getElementById('bannerList');
+  const loading = document.getElementById('loadingText');
+  list.innerHTML = '';
+  loading.style.display = 'none';
+  
+  if (data && data.length === 0) {
+    list.innerHTML = '<p style="color: #666;">No banners added yet.</p>';
+    return;
+  }
+
+  if (data) {
+    data.forEach(b => {
+      list.innerHTML += `
+        <div class="product-item">
+          <img src="${b.image_url}" loading="lazy" alt="${b.title}" style="width: 120px; height: 60px;">
+          <div style="flex: 1;">
+            <h3>${b.title}</h3>
+            <p>${b.subtitle}</p>
+          </div>
+          <button onclick="deleteBanner(${b.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
+        </div>
+      `;
+    });
+  }
+}
+
+window.deleteBanner = async function(id) {
+  if (confirm('Delete this banner?')) {
+    const { error } = await supabaseClient.from('banners').delete().eq('id', id);
+    if (error) {
+      alert('Error: ' + error.message);
+    } else {
+      loadBanners();
+    }
+  }
+}
+
+loadBanners();
+</script>
+</body>
+</html>

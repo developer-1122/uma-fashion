@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coupons - Uma's Fashion Wear</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="dashboard">
+  <header>
+    <h1>Uma's Fashion Wear - Admin</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="orders.html">Orders</a>
+    <a href="banners.html">Slider</a>
+    <a href="coupons.html" class="active">Coupons</a>
+  </nav>
+  <main>
+    <h2>Manage Coupons</h2>
+    <form id="couponForm" class="product-form">
+      <input type="text" id="cCode" placeholder="Coupon Code (e.g. UMA20)" required style="text-transform: uppercase;">
+      <input type="number" id="cPercent" placeholder="Discount Percentage (e.g. 20)" required>
+      <button type="submit" id="saveBtn">Create Coupon</button>
+    </form>
+
+    <h2 style="margin-top: 30px;">All Coupons</h2>
+    <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading coupons...</p>
+    <div id="couponList"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (!session || session.user.email !== 'donnhero6@gmail.com') {
+    window.location.href = 'index.html';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+document.getElementById('couponForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.textContent = 'Creating...';
+  saveBtn.disabled = true;
+
+  const code = document.getElementById('cCode').value.toUpperCase();
+  const discount_percent = document.getElementById('cPercent').value;
+
+  const { error } = await supabaseClient.from('coupons').insert([{ code, discount_percent }]);
+
+  if (error) {
+    alert('Error: ' + error.message);
+  } else {
+    document.getElementById('couponForm').reset();
+    loadCoupons();
+  }
+  
+  saveBtn.textContent = 'Create Coupon';
+  saveBtn.disabled = false;
+});
+
+async function loadCoupons() {
+  const { data } = await supabaseClient.from('coupons').select('*').order('created_at', { ascending: false });
+  const list = document.getElementById('couponList');
+  const loading = document.getElementById('loadingText');
+  list.innerHTML = '';
+  loading.style.display = 'none';
+  
+  if (data && data.length === 0) {
+    list.innerHTML = '<p style="color: #666;">No coupons created yet.</p>';
+    return;
+  }
+
+  if (data) {
+    data.forEach(c => {
+      const statusColor = c.is_active ? '#10B981' : '#EF4444';
+      list.innerHTML += `
+        <div class="product-item">
+          <div style="flex: 1;">
+            <h3 style="letter-spacing: 1px;">${c.code}</h3>
+            <p>${c.discount_percent}% OFF <span style="color: ${statusColor}; font-weight: bold; margin-left: 10px;">(${c.is_active ? 'Active' : 'Inactive'})</span></p>
+          </div>
+          <button onclick="toggleCoupon(${c.id}, ${c.is_active})" style="background: #E8F0EC; color: #1C3B2D; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px;">${c.is_active ? 'Disable' : 'Enable'}</button>
+          <button onclick="deleteCoupon(${c.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
+        </div>
+      `;
+    });
+  }
+}
+
+window.toggleCoupon = async function(id, currentStatus) {
+  const { error } = await supabaseClient.from('coupons').update({ is_active: !currentStatus }).eq('id', id);
+  if (error) alert(error.message);
+  else loadCoupons();
+}
+
+window.deleteCoupon = async function(id) {
+  if (confirm('Delete this coupon?')) {
+    const { error } = await supabaseClient.from('coupons').delete().eq('id', id);
+    if (error) alert(error.message);
+    else loadCoupons();
+  }
+}
+
+loadCoupons();
+</script>
+</body>
+</html>

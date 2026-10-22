@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders - Uma's Fashion Wear</title>
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+.filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+.filter-bar input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; flex: 1; min-width: 150px; }
+.tab-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+.tab-btn.active { background: #1C3B2D; color: white; border-color: #1C3B2D; }
+.export-btn { padding: 10px 20px; background: #C59B5F; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <header>
+    <h1>Uma's Fashion Wear - Admin</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="categories.html">Categories</a>
+    <a href="orders.html" class="active">Orders</a>
+    <a href="banners.html">Slider</a>
+    <a href="coupons.html">Coupons</a>
+    <a href="settings.html">Settings</a>
+  </nav>
+  <main>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>Customer Orders</h2>
+      <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+    </div>
+    
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="Search by Name or Phone..." oninput="filterOrders()">
+      <button class="tab-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="tab-btn" onclick="setFilter('Pending', this)">Pending</button>
+      <button class="tab-btn" onclick="setFilter('Shipped', this)">Shipped</button>
+      <button class="tab-btn" onclick="setFilter('Delivered', this)">Delivered</button>
+      <button class="tab-btn" onclick="setFilter('Cancelled', this)">Cancelled</button>
+    </div>
+
+    <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading orders...</p>
+    <div id="ordersList"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (!session || session.user.email !== 'donnhero6@gmail.com') {
+    window.location.href = 'index.html';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+let allOrders = [];
+let currentFilter = 'all';
+let currentSearch = '';
+
+async function loadOrders() {
+  const { data: orders, error } = await supabaseClient
+    .from('orders')
+    .select('*, order_items(*)')
+    .order('created_at', { ascending: false });
+
+  const list = document.getElementById('ordersList');
+  const loading = document.getElementById('loadingText');
+  
+  if (error) {
+    loading.textContent = 'Error loading orders.';
+    return;
+  }
+
+  loading.style.display = 'none';
+  allOrders = orders || [];
+  filterOrders();
+}
+
+window.setFilter = function(status, btn) {
+  currentFilter = status;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterOrders();
+}
+
+window.filterOrders = function() {
+  currentSearch = document.getElementById('searchInput').value.toLowerCase();
+  const list = document.getElementById('ordersList');
+  
+  let filtered = allOrders;
+
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(o => o.status === currentFilter);
+  }
+
+  if (currentSearch) {
+    filtered = filtered.filter(o => 
+      o.customer_name.toLowerCase().includes(currentSearch) || 
+      o.phone.includes(currentSearch)
+    );
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="color: #666;">No orders found.</p>';
+    return;
+  }
+
+  list.innerHTML = '';
+
+  filtered.forEach(order => {
+    const date = new Date(order.created_at).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+
+    let itemsHtml = '';
+    order.order_items.forEach(item => {
+      itemsHtml += `
+        <div class="order-item-row">
+          <span>${item.product_name} (x${item.quantity})</span>
+          <span>Rs. ${item.price * item.quantity}</span>
+        </div>
+      `;
+    });
+
+    list.innerHTML += `
+      <div class="order-card" id="order_${order.id}">
+        <div class="order-header">
+          <div>
+            <h3>Order #${order.id}</h3>
+            <p>${date}</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <span class="status-badge status-${order.status}">${order.status}</span>
+            <button onclick="printInvoice(${order.id})" style="background: #E8F0EC; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px;">🖨️</button>
+            <button onclick="deleteOrder(${order.id})" style="background: none; border: none; cursor: pointer; font-size: 18px;">🗑️</button>
+          </div>
+        </div>
+
+        <div class="customer-info">
+          <p><strong>Name:</strong> ${order.customer_name}</p>
+          <p><strong>Phone:</strong> ${order.phone}</p>
+          <p><strong>Payment:</strong> ${order.payment_method || 'COD'}</p>
+          <p><strong>Address:</strong> ${order.address}</p>
+        </div>
+
+        <div class="order-items-list">
+          ${itemsHtml}
+        </div>
+
+        <div class="order-total">
+          Total: Rs. ${order.total_amount}
+        </div>
+
+        <div class="admin-note-box">
+          <input type="text" id="note_${order.id}" placeholder="Write a custom message for customer..." value="${order.admin_note || ''}">
+          <button onclick="saveNote(${order.id})">Save Message</button>
+        </div>
+
+        <div class="order-actions">
+          <select class="status-select" style="margin-top: 0;" onchange="updateStatus(${order.id}, this.value)">
+            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+            <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+            <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+        </div>
+      </div>
+    `;
+  });
+}
+
+window.updateStatus = async function(orderId, newStatus) {
+  const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
+  if (error) alert('Error updating status: ' + error.message);
+  else loadOrders();
+}
+
+window.saveNote = async function(orderId) {
+  const note = document.getElementById(`note_${orderId}`).value;
+  const { error } = await supabaseClient.from('orders').update({ admin_note: note }).eq('id', orderId);
+  if (error) alert('Error saving message: ' + error.message);
+  else alert('Message saved successfully!');
+}
+
+window.deleteOrder = async function(orderId) {
+  if (confirm('Are you sure you want to permanently delete this order?')) {
+    const { error } = await supabaseClient.from('orders').delete().eq('id', orderId);
+    if (error) alert('Error deleting order: ' + error.message);
+    else loadOrders();
+  }
+}
+
+window.printInvoice = function(orderId) {
+  const orderCard = document.getElementById(`order_${orderId}`);
+  const printWindow = window.open('', '', 'height=600,width=800');
+  printWindow.document.write('<html><head><title>Invoice</title>');
+  printWindow.document.write('<style>body{font-family:sans-serif;padding:20px;} .header{text-align:center;margin-bottom:30px;} .header h1{margin:0;} .details{margin-bottom:20px;} .details p{margin:5px 0;} table{width:100%;border-collapse:collapse;margin-top:20px;} th,td{border:1px solid #ddd;padding:10px;text-align:left;} th{background:#f9f9f9;} .order-header button{display:none;} .admin-note-box{display:none;} .order-actions{display:none;}</style>');
+  printWindow.document.write('</head><body>');
+  printWindow.document.write('<div class="header"><h1>Uma\'s Fashion Wear</h1><p>Kathmandu, Nepal | 9851169457</p></div>');
+  printWindow.document.write('<div class="details">');
+  printWindow.document.write(`<p><strong>Order ID:</strong> #${orderId}</p>`);
+  printWindow.document.write('</div>');
+  printWindow.document.write(orderCard.innerHTML);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.print();
+}
+
+window.exportCSV = function() {
+  if (allOrders.length === 0) return;
+  
+  let csvContent = "data:text/csv;charset=utf-8,Order ID,Date,Customer Name,Phone,Address,Total Amount,Status,Payment Method\n";
+  
+  allOrders.forEach(o => {
+    const date = new Date(o.created_at).toLocaleDateString();
+    csvContent += `${o.id},${date},"${o.customer_name}","${o.phone}","${o.address}",${o.total_amount},${o.status},${o.payment_method || 'COD'}\n`;
+  });
+  
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "uma_orders.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+loadOrders();
+</script>
+</body>
+</html>

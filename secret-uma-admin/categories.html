@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Categories - Uma's Fashion Wear</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<div class="dashboard">
+  <header>
+    <h1>Uma's Fashion Wear - Admin</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="categories.html" class="active">Categories</a>
+    <a href="orders.html">Orders</a>
+    <a href="banners.html">Slider</a>
+    <a href="coupons.html">Coupons</a>
+  </nav>
+  <main>
+    <h2>Manage Categories</h2>
+    <form id="categoryForm" class="product-form">
+      <input type="text" id="catName" placeholder="Category Name (e.g. Winter Wear)" required>
+      <button type="submit" id="saveBtn">Add Category</button>
+    </form>
+
+    <h2 style="margin-top: 30px;">All Categories</h2>
+    <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading categories...</p>
+    <div id="categoryList"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (!session || session.user.email !== 'donnhero6@gmail.com') {
+    window.location.href = 'index.html';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.textContent = 'Adding...';
+  saveBtn.disabled = true;
+
+  const name = document.getElementById('catName').value;
+  const slug = name.toLowerCase().replace(/ /g, '-');
+
+  const { error } = await supabaseClient.from('categories').insert([{ name, slug }]);
+
+  if (error) {
+    alert('Error: ' + error.message);
+  } else {
+    document.getElementById('categoryForm').reset();
+    loadCategories();
+  }
+  
+  saveBtn.textContent = 'Add Category';
+  saveBtn.disabled = false;
+});
+
+async function loadCategories() {
+  const { data } = await supabaseClient.from('categories').select('*').order('created_at', { ascending: true });
+  const list = document.getElementById('categoryList');
+  const loading = document.getElementById('loadingText');
+  list.innerHTML = '';
+  loading.style.display = 'none';
+
+  if (data && data.length > 0) {
+    data.forEach(c => {
+      list.innerHTML += `
+        <div class="product-item">
+          <div style="flex: 1;">
+            <h3>${c.name}</h3>
+            <p>Slug: ${c.slug}</p>
+          </div>
+          <button onclick="deleteCategory(${c.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
+        </div>
+      `;
+    });
+  } else {
+    list.innerHTML = '<p style="color: #666;">No categories found.</p>';
+  }
+}
+
+window.deleteCategory = async function(id) {
+  if (confirm('Delete this category? Products in this category might show errors.')) {
+    const { error } = await supabaseClient.from('categories').delete().eq('id', id);
+    if (error) {
+      alert('Error: ' + error.message);
+    } else {
+      loadCategories();
+    }
+  }
+}
+
+loadCategories();
+</script>
+</body>
+</html>

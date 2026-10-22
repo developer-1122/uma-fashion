@@ -1,0 +1,342 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background: #f4f7f6;
+  color: #333;
+  min-height: 100vh;
+}
+
+.login-box {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.login-box h1 {
+  margin-bottom: 30px;
+  text-align: center;
+  color: #1C3B2D;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 14px;
+  background: #1C3B2D;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.login-box button:hover {
+  background: #11261C;
+}
+
+#error {
+  color: red;
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.dashboard header {
+  background: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.dashboard header h1 {
+  font-size: 18px;
+  color: #1C3B2D;
+  font-weight: 800;
+}
+
+.dashboard header button {
+  padding: 8px 16px;
+  background: #E8F0EC;
+  color: #1C3B2D;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.dashboard nav {
+  background: #fff;
+  padding: 15px 20px;
+  display: flex;
+  gap: 25px;
+  border-bottom: 1px solid #eee;
+  overflow-x: auto;
+}
+
+.dashboard nav a {
+  color: #666;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  padding-bottom: 5px;
+  white-space: nowrap;
+}
+
+.dashboard nav a:hover, .dashboard nav a.active {
+  color: #1C3B2D;
+  border-bottom: 2px solid #1C3B2D;
+}
+
+.dashboard main {
+  padding: 25px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard main h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+  color: #222;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-left: 5px solid #1C3B2D;
+}
+
+.stat-icon {
+  font-size: 32px;
+  background: #E8F0EC;
+  padding: 15px;
+  border-radius: 50%;
+}
+
+.stat-info h3 {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.stat-info p {
+  font-size: 28px;
+  font-weight: bold;
+  color: #222;
+}
+
+.product-form {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.product-form input, .product-form select, .product-form textarea {
+  padding: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fafafa;
+}
+
+.product-form input:focus, .product-form select:focus, .product-form textarea:focus {
+  outline: none;
+  border-color: #1C3B2D;
+  background: white;
+}
+
+.product-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.product-form button {
+  padding: 14px;
+  background: #1C3B2D;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.product-form button:hover {
+  background: #11261C;
+}
+
+.product-item {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.product-item img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-item h3 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  color: #222;
+}
+
+.product-item p {
+  font-size: 14px;
+  color: #666;
+}
+
+.delete-btn {
+  background: #ffebee;
+  color: #f44336;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.order-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  border-left: 5px solid #C59B5F;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.order-header h3 { margin: 0; color: #333; font-size: 16px; }
+.order-header p { margin: 0; color: #777; font-size: 13px; margin-top: 5px; }
+
+.customer-info {
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.customer-info p { margin-bottom: 5px; }
+
+.order-items-list { margin-bottom: 15px; }
+
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.order-total {
+  text-align: right;
+  font-size: 16px;
+  font-weight: bold;
+  color: #1C3B2D;
+  margin-bottom: 15px;
+}
+
+.status-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.status-Pending { background: #fff3cd; color: #856404; }
+.status-Shipped { background: #cce5ff; color: #004085; }
+.status-Delivered { background: #d4edda; color: #155724; }
+.status-Cancelled { background: #f8d7da; color: #721c24; }
+
+.status-select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.admin-note-box {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.admin-note-box input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.admin-note-box button {
+  padding: 10px 15px;
+  background: #C59B5F;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.order-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  gap: 10px;
+}

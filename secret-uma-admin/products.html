@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products - Uma's Fashion Wear</title>
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+.search-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 15px; outline: none; }
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <header>
+    <h1>Uma's Fashion Wear - Admin</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html" class="active">Products</a>
+    <a href="orders.html">Orders</a>
+    <a href="banners.html">Slider</a>
+    <a href="coupons.html">Coupons</a>
+  </nav>
+  <main>
+    <h2 id="formTitle">Add New Product</h2>
+    <form id="productForm" class="product-form">
+      <input type="hidden" id="pId">
+      <input type="text" id="pName" placeholder="Product Name" required>
+      <input type="number" id="pPrice" placeholder="Selling Price (Rs.)" required>
+      <input type="number" id="pMrp" placeholder="Original Price / MRP (Rs.)">
+      <select id="pCategory" required>
+        <option value="">Select Category</option>
+      </select>
+      <input type="text" id="pSizes" placeholder="Sizes (e.g. S, M, L, XL)" required>
+      <input type="number" id="pStock" placeholder="Stock Quantity" required>
+      <input type="file" id="pFiles" accept="image/*" multiple>
+      <textarea id="pDesc" placeholder="Description"></textarea>
+      <button type="submit" id="saveBtn">Save Product</button>
+      <button type="button" id="cancelBtn" style="display: none; background: #666;" onclick="cancelEdit()">Cancel Edit</button>
+    </form>
+
+    <h2 style="margin-top: 30px;">All Products</h2>
+    <input type="text" id="searchProduct" class="search-box" placeholder="Search products by name..." oninput="filterAdminProducts()">
+    
+    <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading products...</p>
+    <div id="productList"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (!session || session.user.email !== 'donnhero6@gmail.com') {
+    window.location.href = 'index.html';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+let currentImages = [];
+let allProductsData = [];
+
+async function loadCategories() {
+  const { data } = await supabaseClient.from('categories').select('*');
+  const select = document.getElementById('pCategory');
+  select.innerHTML = '<option value="">Select Category</option>';
+  if (data) {
+    data.forEach(cat => {
+      select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+    });
+  }
+}
+
+window.cancelEdit = function() {
+  document.getElementById('productForm').reset();
+  document.getElementById('pId').value = '';
+  document.getElementById('formTitle').textContent = 'Add New Product';
+  document.getElementById('cancelBtn').style.display = 'none';
+  currentImages = [];
+}
+
+document.getElementById('productForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.textContent = 'Processing...';
+  saveBtn.disabled = true;
+
+  const id = document.getElementById('pId').value;
+  const name = document.getElementById('pName').value;
+  const price = document.getElementById('pPrice').value;
+  const mrp = document.getElementById('pMrp').value || null;
+  const category_id = document.getElementById('pCategory').value;
+  const sizesArray = document.getElementById('pSizes').value.split(',').map(s => s.trim());
+  const stock = document.getElementById('pStock').value;
+  const description = document.getElementById('pDesc').value;
+  const files = document.getElementById('pFiles').files;
+
+  let uploadedUrls = currentImages;
+
+  if (files.length > 0) {
+    uploadedUrls = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${i}.${fileExt}`;
+      const { error: uploadError } = await supabaseClient.storage.from('product-media').upload(fileName, file);
+
+      if (uploadError) {
+        alert('Upload Error: ' + uploadError.message);
+        saveBtn.textContent = 'Save Product';
+        saveBtn.disabled = false;
+        return;
+      }
+      const { data: publicUrlData } = supabaseClient.storage.from('product-media').getPublicUrl(fileName);
+      uploadedUrls.push(publicUrlData.publicUrl);
+    }
+  }
+
+  const productData = {
+    name, price, mrp, category_id, stock, description, sizes: sizesArray, images: uploadedUrls
+  };
+
+  let error;
+  if (id) {
+    const res = await supabaseClient.from('products').update(productData).eq('id', id);
+    error = res.error;
+  } else {
+    const res = await supabaseClient.from('products').insert([productData]);
+    error = res.error;
+  }
+
+  if (error) {
+    alert('Database Error: ' + error.message);
+  } else {
+    cancelEdit();
+    loadProducts();
+  }
+  
+  saveBtn.textContent = 'Save Product';
+  saveBtn.disabled = false;
+});
+
+async function loadProducts() {
+  const { data } = await supabaseClient.from('products').select('*, categories(name)').order('created_at', { ascending: false });
+  allProductsData = data || [];
+  filterAdminProducts();
+}
+
+window.filterAdminProducts = function() {
+  const query = document.getElementById('searchProduct').value.toLowerCase();
+  const list = document.getElementById('productList');
+  const loading = document.getElementById('loadingText');
+  list.innerHTML = '';
+  loading.style.display = 'none';
+
+  const filtered = allProductsData.filter(p => p.name.toLowerCase().includes(query));
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="color: #666;">No products found.</p>';
+    return;
+  }
+
+  filtered.forEach(p => {
+    const img = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200';
+    const catName = p.categories ? p.categories.name : 'No Category';
+    const mrpText = p.mrp ? `<strike>Rs. ${p.mrp}</strike>` : '';
+    
+    list.innerHTML += `
+      <div class="product-item">
+        <img src="${img}" loading="lazy" alt="${p.name}">
+        <div style="flex: 1;">
+          <h3>${p.name}</h3>
+          <p>Rs. ${p.price} ${mrpText} | Stock: ${p.stock} | ${catName}</p>
+        </div>
+        <button onclick='editProduct(${JSON.stringify(p)})' style="background: #E8F0EC; color: #1C3B2D; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Edit</button>
+        <button onclick="deleteProduct(${p.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
+      </div>
+    `;
+  });
+}
+
+window.editProduct = function(p) {
+  document.getElementById('pId').value = p.id;
+  document.getElementById('pName').value = p.name;
+  document.getElementById('pPrice').value = p.price;
+  document.getElementById('pMrp').value = p.mrp || '';
+  document.getElementById('pCategory').value = p.category_id;
+  document.getElementById('pSizes').value = p.sizes ? p.sizes.join(', ') : '';
+  document.getElementById('pStock').value = p.stock;
+  document.getElementById('pDesc').value = p.description || '';
+  currentImages = p.images || [];
+  
+  document.getElementById('formTitle').textContent = 'Edit Product';
+  document.getElementById('saveBtn').textContent = 'Update Product';
+  document.getElementById('cancelBtn').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+window.deleteProduct = async function(id) {
+  if (confirm('Delete this product?')) {
+    const { error } = await supabaseClient.from('products').delete().eq('id', id);
+    if (error) {
+      alert('Error: ' + error.message);
+    } else {
+      loadProducts();
+    }
+  }
+}
+
+loadCategories();
+loadProducts();
+</script>
+</body>
+</html>

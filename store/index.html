@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1C3B2D">
+<title>Uma's Fashion Wear</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="announcement-bar" id="announcementBar">Free Delivery inside Kathmandu Valley!</div>
+<header>
+  <a href="index.html" style="text-decoration: none;"><h1 id="storeName">Uma's</h1></a>
+  <input type="text" id="searchInput" class="search-bar" placeholder="Search..." oninput="filterProducts()">
+  <button onclick="toggleDarkMode()" style="background: none; border: none; font-size: 20px; cursor: pointer; margin-right: 10px;">🌓</button>
+  <a href="cart.html" class="cart-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+    <span class="cart-count" id="cartCount">0</span>
+  </a>
+</header>
+
+<div class="slider-container">
+  <div class="slider" id="slider"></div>
+</div>
+
+<div class="container">
+  <div class="filter-row">
+    <div class="category-filters" id="categoryFilters">
+      <button class="filter-btn active" onclick="setCategory('all', this)">All</button>
+    </div>
+  </div>
+
+  <h2 class="section-title">Trending Products</h2>
+  <div id="storeProducts" class="product-grid">
+    <div class="skeleton" style="height: 250px;"></div>
+    <div class="skeleton" style="height: 250px;"></div>
+    <div class="skeleton" style="height: 250px;"></div>
+    <div class="skeleton" style="height: 250px;"></div>
+  </div>
+  <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreProducts()" style="display: none;">Load More Products</button>
+</div>
+
+<div id="quickViewModal" class="modal-overlay">
+  <div class="modal-content">
+    <button class="close-modal" onclick="closeQuickView()">×</button>
+    <div id="quickViewBody"></div>
+  </div>
+</div>
+
+<a href="https://wa.me/9779851169457" class="whatsapp-float" target="_blank">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+</a>
+
+<div class="bottom-nav">
+  <a href="index.html" class="nav-item active">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a>
+  <a href="wishlist.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+    <span>Wishlist</span>
+  </a>
+  <a href="cart.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+    <span>Cart</span>
+  </a>
+  <a href="profile.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
+  </a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
+if (localStorage.getItem('uma_theme') === 'dark') {
+  document.body.classList.add('dark-mode');
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  if (document.body.classList.contains('dark-mode')) {
+    localStorage.setItem('uma_theme', 'dark');
+  } else {
+    localStorage.setItem('uma_theme', 'light');
+  }
+}
+
+async function loadSettings() {
+  const { data } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
+  if (data) {
+    if (data.store_name) {
+      document.getElementById('storeName').textContent = data.store_name.split(' ')[0];
+      document.title = data.store_name;
+    }
+    if (data.announcement_text) {
+      document.getElementById('announcementBar').textContent = data.announcement_text;
+    } else {
+      document.getElementById('announcementBar').style.display = 'none';
+    }
+  }
+}
+
+let allProducts = [];
+let displayedProducts = 10;
+let currentCategory = 'all';
+let currentSearch = '';
+let wishlist = JSON.parse(localStorage.getItem('uma_wishlist')) || [];
+let currentSlide = 0;
+
+window.openQuickView = async function(e, id) {
+  e.preventDefault();
+  document.getElementById('quickViewModal').style.display = 'flex';
+  document.getElementById('quickViewBody').innerHTML = '<p style="text-align:center;">Loading...</p>';
+  
+  const { data } = await supabaseClient.from('products').select('*').eq('id', id).single();
+  if (!data) return;
+
+  const img = data.images && data.images.length > 0 ? data.images[0] : 'https://picsum.photos/200';
+  const sizes = data.sizes || ['Free Size'];
+
+  document.getElementById('quickViewBody').innerHTML = `
+    <div class="quick-view-content">
+      <img src="${img}" alt="${data.name}">
+      <div class="quick-view-info">
+        <h3>${data.name}</h3>
+        <p>Stock: ${data.stock > 0 ? data.stock : '<span style="color:red;">Out of Stock</span>'}</p>
+        <div class="qv-price">Rs. ${data.price}</div>
+        <p>Sizes: ${sizes.join(', ')}</p>
+      </div>
+    </div>
+    <div class="quick-view-actions">
+      <button onclick="closeQuickView(); window.location.href='product.html?id=${data.id}'" style="background:transparent; color:var(--primary); border:2px solid var(--primary); margin-bottom:10px;">View Full Details</button>
+      <button onclick="addToCartFromQuickView(${data.id}, '${sizes[0]}')" ${data.stock <= 0 ? 'disabled style="background:#ccc;"' : ''}>Add to Cart</button>
+    </div>
+  `;
+}
+
+window.closeQuickView = function() {
+  document.getElementById('quickViewModal').style.display = 'none';
+}
+
+window.addToCartFromQuickView = function(id, size) {
+  const product = allProducts.find(p => p.id === id);
+  if (!product) return;
+
+  let cart = JSON.parse(localStorage.getItem('uma_cart')) || [];
+  const cartId = `${product.id}-${size}`;
+  const existingItem = cart.find(item => item.cartId === cartId);
+  
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      cartId: cartId,
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      size: size,
+      quantity: 1
+    });
+  }
+  
+  localStorage.setItem('uma_cart', JSON.stringify(cart));
+  updateCartCount();
+  closeQuickView();
+  showToast('Added to cart successfully!');
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+async function loadBanners() {
+  const { data } = await supabaseClient.from('banners').select('*').eq('is_active', true);
+  const slider = document.getElementById('slider');
+  slider.innerHTML = '';
+  
+  if (data && data.length > 0) {
+    data.forEach(b => {
+      const link = b.link ? b.link : 'javascript:void(0)';
+      slider.innerHTML += `
+        <a href="${link}" class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${b.image_url}');">
+          <h2>${b.title}</h2>
+          <p>${b.subtitle}</p>
+        </a>
+      `;
+    });
+    
+    setInterval(() => {
+      const slides = document.querySelectorAll('.slide');
+      if (slides.length > 0) {
+        currentSlide = (currentSlide + 1) % slides.length;
+        slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+      }
+    }, 3000);
+  } else {
+    slider.innerHTML = `
+      <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop');">
+        <h2>Big Fashion Sale</h2>
+        <p>Flat 50% Off on Women's Wear</p>
+      </div>
+    `;
+  }
+}
+
+async function loadCategories() {
+  const { data } = await supabaseClient.from('categories').select('*');
+  const container = document.getElementById('categoryFilters');
+  if (data) {
+    data.forEach(c => {
+      container.innerHTML += `<button class="filter-btn" onclick="setCategory('${c.name}', this)">${c.name}</button>`;
+    });
+  }
+}
+
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem('uma_cart')) || [];
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  document.getElementById('cartCount').textContent = count;
+}
+
+async function loadStoreProducts() {
+  const { data, error } = await supabaseClient.from('products').select('*, categories(name)').eq('is_active', true);
+  if (!error && data) {
+    allProducts = data;
+    filterProducts();
+  }
+}
+
+function filterProducts() {
+  currentSearch = document.getElementById('searchInput').value.toLowerCase();
+  
+  let filtered = allProducts;
+
+  if (currentCategory !== 'all') {
+    filtered = filtered.filter(p => p.categories && p.categories.name === currentCategory);
+  }
+
+  if (currentSearch) {
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(currentSearch));
+  }
+
+  filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  
+  displayedProducts = 10;
+  renderProducts(filtered);
+}
+
+function renderProducts(list) {
+  const grid = document.getElementById('storeProducts');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  grid.innerHTML = '';
+
+  if (list.length === 0) {
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-weight: 500;">No products found.</p>';
+    loadMoreBtn.style.display = 'none';
+    return;
+  }
+
+  const toDisplay = list.slice(0, displayedProducts);
+
+  toDisplay.forEach(p => {
+    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200';
+    const isWishlisted = wishlist.includes(p.id);
+    const isOutOfStock = p.stock <= 0;
+    const isLowStock = p.stock > 0 && p.stock <= 5;
+    
+    let discountHtml = '';
+    let mrpHtml = '';
+    
+    if (p.mrp && p.mrp > p.price) {
+      const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+      discountHtml = `<span class="discount-tag">${discountPercent}% OFF</span>`;
+      mrpHtml = `<span class="mrp">Rs. ${p.mrp}</span>`;
+    }
+
+    let outOfStockHtml = isOutOfStock ? `<div style="position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); display:flex; align-items:center; justify-content:center; z-index:5;"><span style="background:#1A1A1A; color:white; padding:8px 16px; font-weight:bold; font-size:12px; border-radius:4px;">OUT OF STOCK</span></div>` : '';
+    let urgencyHtml = isLowStock ? `<span class="urgency-tag">Only ${p.stock} left!</span>` : '';
+
+    grid.innerHTML += `
+      <div class="product-card">
+        ${discountHtml}
+        ${urgencyHtml}
+        ${outOfStockHtml}
+        <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(event, ${p.id}, this)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
+        <button class="quick-view-btn" onclick="openQuickView(event, ${p.id})">👁️</button>
+        <a href="product.html?id=${p.id}" style="text-decoration: none; color: inherit;">
+          <img src="${imageUrl}" alt="${p.name}">
+          <div class="product-info">
+            <h3>${p.name}</h3>
+            <div class="price-row">
+              <p class="price">Rs. ${p.price}</p>
+              ${mrpHtml}
+            </div>
+          </div>
+        </a>
+      </div>
+    `;
+  });
+
+  if (displayedProducts >= list.length) {
+    loadMoreBtn.style.display = 'none';
+  } else {
+    loadMoreBtn.style.display = 'block';
+    loadMoreBtn.dataset.remaining = list.length - displayedProducts;
+  }
+  
+  window.currentFilteredList = list;
+}
+
+window.loadMoreProducts = function() {
+  displayedProducts += 10;
+  renderProducts(window.currentFilteredList);
+}
+
+window.toggleWishlist = function(e, id, btn) {
+  e.preventDefault();
+  if (wishlist.includes(id)) {
+    wishlist = wishlist.filter(item => item !== id);
+    btn.classList.remove('active');
+  } else {
+    wishlist.push(id);
+    btn.classList.add('active');
+  }
+  localStorage.setItem('uma_wishlist', JSON.stringify(wishlist));
+}
+
+window.setCategory = function(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterProducts();
+}
+
+updateCartCount();
+loadSettings();
+loadBanners();
+loadCategories();
+loadStoreProducts();
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Wishlist - Uma's Fashion Wear</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <a href="index.html" style="color: #1A1A1A; text-decoration: none; display: flex; align-items: center;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+  </a>
+  <h1 style="font-size: 20px; color: #1A1A1A; margin: 0; flex: 1; font-weight: 800;">My Wishlist</h1>
+</header>
+
+<div class="container" style="margin-top: 20px;">
+  <div id="wishlistGrid" class="product-grid"></div>
+</div>
+
+<div class="bottom-nav">
+  <a href="index.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a>
+  <a href="wishlist.html" class="nav-item active">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+    <span>Wishlist</span>
+  </a>
+  <a href="cart.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+    <span>Cart</span>
+  </a>
+  <a href="profile.html" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
+  </a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+let wishlist = JSON.parse(localStorage.getItem('uma_wishlist')) || [];
+
+async function loadWishlist() {
+  const grid = document.getElementById('wishlistGrid');
+  
+  if (wishlist.length === 0) {
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666; font-weight: 500; margin-top: 30px;">Your wishlist is empty.</p>';
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from('products')
+    .select('*')
+    .in('id', wishlist);
+
+  if (error || !data) {
+    grid.innerHTML = '<p>Error loading wishlist.</p>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  data.forEach(p => {
+    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200';
+    
+    let discountHtml = '';
+    let mrpHtml = '';
+    
+    if (p.mrp && p.mrp > p.price) {
+      const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+      discountHtml = `<span class="discount-tag">${discountPercent}% OFF</span>`;
+      mrpHtml = `<span class="mrp">Rs. ${p.mrp}</span>`;
+    }
+
+    grid.innerHTML += `
+      <div class="product-card">
+        ${discountHtml}
+        <button class="wishlist-btn active" onclick="removeWishlist(${p.id})">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
+        <a href="product.html?id=${p.id}" style="text-decoration: none; color: inherit;">
+          <img src="${imageUrl}" alt="${p.name}">
+          <div class="product-info">
+            <h3>${p.name}</h3>
+            <div class="price-row">
+              <p class="price">Rs. ${p.price}</p>
+              ${mrpHtml}
+            </div>
+          </div>
+        </a>
+      </div>
+    `;
+  });
+}
+
+window.removeWishlist = function(id) {
+  wishlist = wishlist.filter(item => item !== id);
+  localStorage.setItem('uma_wishlist', JSON.stringify(wishlist));
+  loadWishlist();
+}
+
+loadWishlist();
+</script>
+</body>
+</html>
