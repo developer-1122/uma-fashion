@@ -170,3 +170,13 @@ header h1 { font-size: 24px; color: var(--primary); font-weight: 800; text-decor
 
 .skeleton { background: var(--border-color); border-radius: 16px; animation: pulse 1.5s infinite ease-in-out; }
 @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+/* Premium Auth / Login Styles */
+.auth-tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+.auth-tab { flex: 1; padding: 12px; text-align: center; font-weight: 700; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: 0.3s; }
+.auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.auth-form input { width: 100%; padding: 15px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 15px; font-size: 15px; outline: none; background: var(--bg-color); color: var(--text-main); transition: 0.2s; }
+.auth-form input:focus { border-color: var(--primary); background: var(--card-bg); }
+.auth-btn { width: 100%; padding: 16px; background: var(--primary); color: var(--primary-text); border: none; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(28,59,45,0.3); margin-top: 10px; transition: 0.2s; }
+.auth-btn:active { transform: scale(0.98); }
+.logout-profile-btn { padding: 10px 20px; background: rgba(239, 68, 68, 0.1); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; }
