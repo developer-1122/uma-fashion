@@ -15,18 +15,9 @@
 </head>
 <body>
 <div class="dashboard">
-  <header>
-    <h1>Uma's Fashion Wear - Admin</h1>
-    <button id="logoutBtn">Logout</button>
-  </header>
+  <header><h1>Uma's Fashion Wear - Admin</h1><button id="logoutBtn">Logout</button></header>
   <nav>
-    <a href="dashboard">Dashboard</a>
-    <a href="products">Products</a>
-    <a href="categories">Categories</a>
-    <a href="orders" class="active">Orders</a>
-    <a href="banners">Slider</a>
-    <a href="coupons">Coupons</a>
-    <a href="settings">Settings</a>
+    <a href="dashboard.html">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html" class="active">Orders</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a>
   </nav>
   <main>
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -50,118 +41,53 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../shared/supabase.js"></script>
 <script>
-supabaseClient.auth.getSession().then(({ data: { session } }) => {
-  if (!session || session.user.email !== 'donnhero6@gmail.com') {
-    window.location.href = 'index';
-  }
-});
+supabaseClient.auth.getSession().then(({ data: { session } }) => { if (!session || session.user.email !== 'donnhero6@gmail.com') window.location.href = 'index.html'; });
+document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await supabaseClient.auth.signOut();
-  window.location.href = 'index';
-});
-
-let allOrders = [];
-let currentFilter = 'all';
-let currentSearch = '';
+let allOrders = []; let currentFilter = 'all'; let currentSearch = '';
 
 async function loadOrders() {
-  const { data: orders, error } = await supabaseClient
-    .from('orders')
-    .select('*, order_items(*)')
-    .order('created_at', { ascending: false });
-
-  const list = document.getElementById('ordersList');
-  const loading = document.getElementById('loadingText');
-  
-  if (error) {
-    loading.textContent = 'Error loading orders.';
-    return;
-  }
-
-  loading.style.display = 'none';
-  allOrders = orders || [];
-  filterOrders();
+  const { data: orders, error } = await supabaseClient.from('orders').select('*, order_items(*)').order('created_at', { ascending: false });
+  const list = document.getElementById('ordersList'); const loading = document.getElementById('loadingText');
+  if (error) { loading.textContent = 'Error loading orders.'; return; }
+  loading.style.display = 'none'; allOrders = orders || []; filterOrders();
 }
 
-window.setFilter = function(status, btn) {
-  currentFilter = status;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  filterOrders();
-}
+window.setFilter = function(status, btn) { currentFilter = status; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filterOrders(); }
 
 window.filterOrders = function() {
   currentSearch = document.getElementById('searchInput').value.toLowerCase();
   const list = document.getElementById('ordersList');
-  
   let filtered = allOrders;
-
-  if (currentFilter !== 'all') {
-    filtered = filtered.filter(o => o.status === currentFilter);
-  }
-
-  if (currentSearch) {
-    filtered = filtered.filter(o => 
-      o.customer_name.toLowerCase().includes(currentSearch) || 
-      o.phone.includes(currentSearch)
-    );
-  }
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<p style="color: #666;">No orders found.</p>';
-    return;
-  }
-
+  if (currentFilter !== 'all') filtered = filtered.filter(o => o.status === currentFilter);
+  if (currentSearch) filtered = filtered.filter(o => o.customer_name.toLowerCase().includes(currentSearch) || o.phone.includes(currentSearch));
+  if (filtered.length === 0) { list.innerHTML = '<p style="color: #666;">No orders found.</p>'; return; }
   list.innerHTML = '';
 
   filtered.forEach(order => {
-    const date = new Date(order.created_at).toLocaleDateString('en-GB', {
-      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
-
-    let itemsHtml = '';
-    order.order_items.forEach(item => {
-      itemsHtml += `
-        <div class="order-item-row">
-          <span>${item.product_name} (x${item.quantity})</span>
-          <span>Rs. ${item.price * item.quantity}</span>
-        </div>
-      `;
-    });
-
+    const date = new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    let itemsHtml = ''; order.order_items.forEach(item => { itemsHtml += `<div class="order-item-row"><span>${item.product_name} (x${item.quantity})</span><span>Rs. ${item.price * item.quantity}</span></div>`; });
     list.innerHTML += `
       <div class="order-card" id="order_${order.id}">
         <div class="order-header">
-          <div>
-            <h3>Order #${order.id}</h3>
-            <p>${date}</p>
-          </div>
+          <div><h3>Order #${order.id}</h3><p>${date}</p></div>
           <div style="display: flex; gap: 10px; align-items: center;">
             <span class="status-badge status-${order.status}">${order.status}</span>
             <button onclick="printInvoice(${order.id})" style="background: #E8F0EC; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px;">🖨️</button>
             <button onclick="deleteOrder(${order.id})" style="background: none; border: none; cursor: pointer; font-size: 18px;">🗑️</button>
           </div>
         </div>
-
-        <div class="customer-info">
-          <p><strong>Name:</strong> ${order.customer_name}</p>
-          <p><strong>Phone:</strong> ${order.phone}</p>
-          <p><strong>Payment:</strong> ${order.payment_method || 'COD'}</p>
-          <p><strong>Address:</strong> ${order.address}</p>
-        </div>
-
-        <div class="order-items-list">
-          ${itemsHtml}
-        </div>
-
-        <div class="order-total">
-          Total: Rs. ${order.total_amount}
-        </div>
-
+        <div class="customer-info"><p><strong>Name:</strong> ${order.customer_name}</p><p><strong>Phone:</strong> ${order.phone}</p><p><strong>Payment:</strong> ${order.payment_method || 'COD'}</p><p><strong>Address:</strong> ${order.address}</p></div>
+        <div class="order-items-list">${itemsHtml}</div>
+        <div class="order-total">Total: Rs. ${order.total_amount}</div>
+        
         <div class="admin-note-box">
-          <input type="text" id="note_${order.id}" placeholder="Write a custom message for customer..." value="${order.admin_note || ''}">
-          <button onclick="saveNote(${order.id})">Save Message</button>
+          <input type="text" id="note_${order.id}" placeholder="Write a custom message..." value="${order.admin_note || ''}">
+          <button onclick="saveNote(${order.id})">Save</button>
+        </div>
+        <div class="admin-note-box">
+          <input type="text" id="track_${order.id}" placeholder="Tracking Number (Courier)" value="${order.tracking_number || ''}">
+          <button onclick="saveTracking(${order.id})">Save</button>
         </div>
 
         <div class="order-actions">
@@ -172,67 +98,30 @@ window.filterOrders = function() {
             <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
           </select>
         </div>
-      </div>
-    `;
+      </div>`;
   });
 }
 
-window.updateStatus = async function(orderId, newStatus) {
-  const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
-  if (error) alert('Error updating status: ' + error.message);
-  else loadOrders();
-}
-
-window.saveNote = async function(orderId) {
-  const note = document.getElementById(`note_${orderId}`).value;
-  const { error } = await supabaseClient.from('orders').update({ admin_note: note }).eq('id', orderId);
-  if (error) alert('Error saving message: ' + error.message);
-  else alert('Message saved successfully!');
-}
-
-window.deleteOrder = async function(orderId) {
-  if (confirm('Are you sure you want to permanently delete this order?')) {
-    const { error } = await supabaseClient.from('orders').delete().eq('id', orderId);
-    if (error) alert('Error deleting order: ' + error.message);
-    else loadOrders();
-  }
-}
+window.updateStatus = async function(orderId, newStatus) { const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId); if (!error) loadOrders(); }
+window.saveNote = async function(orderId) { const note = document.getElementById(`note_${orderId}`).value; const { error } = await supabaseClient.from('orders').update({ admin_note: note }).eq('id', orderId); if (!error) alert('Message saved!'); }
+window.saveTracking = async function(orderId) { const track = document.getElementById(`track_${orderId}`).value; const { error } = await supabaseClient.from('orders').update({ tracking_number: track }).eq('id', orderId); if (!error) alert('Tracking saved!'); }
+window.deleteOrder = async function(orderId) { if (confirm('Delete order?')) { const { error } = await supabaseClient.from('orders').delete().eq('id', orderId); if (!error) loadOrders(); } }
 
 window.printInvoice = function(orderId) {
   const orderCard = document.getElementById(`order_${orderId}`);
   const printWindow = window.open('', '', 'height=600,width=800');
-  printWindow.document.write('<html><head>
-  printWindow.document.write('<style>body{font-family:sans-serif;padding:20px;} .header{text-align:center;margin-bottom:30px;} .header h1{margin:0;} .details{margin-bottom:20px;} .details p{margin:5px 0;} table{width:100%;border-collapse:collapse;margin-top:20px;} th,td{border:1px solid #ddd;padding:10px;text-align:left;} th{background:#f9f9f9;} .order-header button{display:none;} .admin-note-box{display:none;} .order-actions{display:none;}</style>');
-  printWindow.document.write('</head><body>');
-  printWindow.document.write('<div class="header"><h1>Uma\'s Fashion Wear</h1><p>Kathmandu, Nepal | 9851169457</p></div>');
-  printWindow.document.write('<div class="details">');
-  printWindow.document.write(`<p><strong>Order ID:</strong> #${orderId}</p>`);
-  printWindow.document.write('</div>');
+  printWindow.document.write('<html><head><title>Invoice</title><style>body{font-family:sans-serif;padding:20px;} .header{text-align:center;margin-bottom:30px;} .details{margin-bottom:20px;} .details p{margin:5px 0;} table{width:100%;border-collapse:collapse;margin-top:20px;} th,td{border:1px solid #ddd;padding:10px;text-align:left;} th{background:#f9f9f9;} .order-header button{display:none;} .admin-note-box{display:none;} .order-actions{display:none;}</style></head><body>');
+  printWindow.document.write(`<div class="header"><h1>Uma's Fashion Wear</h1><p>Kathmandu, Nepal | 9851169457</p></div><div class="details"><p><strong>Order ID:</strong> #${orderId}</p></div>`);
   printWindow.document.write(orderCard.innerHTML);
-  printWindow.document.write('</body></html>');
-  printWindow.document.close();
-  printWindow.print();
+  printWindow.document.close(); printWindow.print();
 }
 
 window.exportCSV = function() {
   if (allOrders.length === 0) return;
-  
-  let csvContent = "data:text/csv;charset=utf-8,Order ID,Date,Customer Name,Phone,Address,Total Amount,Status,Payment Method\n";
-  
-  allOrders.forEach(o => {
-    const date = new Date(o.created_at).toLocaleDateString();
-    csvContent += `${o.id},${date},"${o.customer_name}","${o.phone}","${o.address}",${o.total_amount},${o.status},${o.payment_method || 'COD'}\n`;
-  });
-  
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "uma_orders.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  let csvContent = "data:text/csv;charset=utf-8,Order ID,Date,Customer Name,Phone,Address,Total Amount,Status,Payment Method,Tracking\n";
+  allOrders.forEach(o => { const date = new Date(o.created_at).toLocaleDateString(); csvContent += `${o.id},${date},"${o.customer_name}","${o.phone}","${o.address}",${o.total_amount},${o.status},${o.payment_method || 'COD'},${o.tracking_number || ''}\n`; });
+  const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "uma_orders.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
-
 loadOrders();
 </script>
 </body>

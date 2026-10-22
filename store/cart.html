@@ -10,10 +10,10 @@
 </head>
 <body>
 <header>
-  <a href="index" style="color: #1A1A1A; text-decoration: none; display: flex; align-items: center;">
+  <a href="/store/" style="color: var(--text-main); text-decoration: none; display: flex; align-items: center;">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
   </a>
-  <h1 style="font-size: 20px; color: #1A1A1A; margin: 0; flex: 1; font-weight: 800;">My Cart</h1>
+  <h1 style="font-size: 20px; margin: 0; flex: 1; font-weight: 800;">My Cart</h1>
 </header>
 
 <div class="container" style="margin-top: 20px;">
@@ -23,65 +23,32 @@
     <h2 class="section-title" style="margin-bottom: 15px;">Delivery Details</h2>
     <form id="checkoutForm">
       <input type="text" id="cName" placeholder="Full Name" required>
-      <input type="tel" id="cPhone" placeholder="Phone Number (98XXXXXXXX)" pattern="[9][678][0-9]{8}" maxlength="10" title="Please enter a valid 10-digit Nepal number" required>
-      <select id="cDistrict" required style="width: 100%; padding: 15px; border: 1px solid #E5E7EB; border-radius: 12px; margin-bottom: 15px; font-size: 15px; background: #FAFAFA; outline: none; font-weight: 500;">
+      <input type="tel" id="cPhone" placeholder="Phone Number (98XXXXXXXX)" pattern="[9][678][0-9]{8}" maxlength="10" required>
+      <select id="cDistrict" required>
         <option value="">Select District</option>
         <option value="Kathmandu">Kathmandu</option>
         <option value="Lalitpur">Lalitpur</option>
         <option value="Bhaktapur">Bhaktapur</option>
         <option value="Kaski">Kaski</option>
         <option value="Chitwan">Chitwan</option>
-        <option value="Morang">Morang</option>
         <option value="Other">Other District</option>
       </select>
-      <textarea id="cAddress" placeholder="Full Delivery Address (Area, Landmark)" required></textarea>
+      <textarea id="cAddress" placeholder="Full Delivery Address" required></textarea>
       
       <h2 class="section-title" style="margin: 25px 0 15px;">Available Coupons</h2>
       <div class="available-coupons" id="couponList"></div>
 
-      <h2 class="section-title" style="margin: 25px 0 15px;">Have a Coupon?</h2>
-      <div class="coupon-box">
-        <input type="text" id="couponInput" placeholder="Enter coupon code">
-        <button type="button" onclick="applyCoupon(document.getElementById('couponInput').value)">Apply</button>
-      </div>
-      <p id="couponMsg" style="font-size: 13px; font-weight: 600; margin-bottom: 15px;"></p>
-
       <h2 class="section-title" style="margin: 25px 0 15px;">Payment Method</h2>
       <div class="payment-options">
-        <label class="pay-option">
-          <input type="radio" name="payment" value="Cash on Delivery" checked>
-          <span style="flex: 1;">Cash on Delivery</span>
-        </label>
-        <label class="pay-option">
-          <input type="radio" name="payment" value="eSewa">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Esewa_Logo.svg/256px-Esewa_Logo.svg.png" alt="eSewa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-          <span style="display: none; color: #60bb46; font-weight: 800; font-size: 18px; font-family: sans-serif;">eSewa</span>
-        </label>
-        <label class="pay-option">
-          <input type="radio" name="payment" value="Khalti">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Khalti_Logo.svg/256px-Khalti_Logo.svg.png" alt="Khalti" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-          <span style="display: none; color: #5c2d91; font-weight: 800; font-size: 18px; font-family: sans-serif;">Khalti</span>
-        </label>
-        <label class="pay-option">
-          <input type="radio" name="payment" value="IME Pay">
-          <span style="flex: 1; color: #d32f2f; font-weight: 800; font-style: italic; font-size: 18px;">IME Pay</span>
-        </label>
+        <label class="pay-option"><input type="radio" name="payment" value="Cash on Delivery" checked><span style="flex: 1;">Cash on Delivery</span></label>
+        <label class="pay-option"><input type="radio" name="payment" value="eSewa"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Esewa_Logo.svg/256px-Esewa_Logo.svg.png" alt="eSewa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #60bb46; font-weight: 800;">eSewa</span></label>
+        <label class="pay-option"><input type="radio" name="payment" value="Khalti"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Khalti_Logo.svg/256px-Khalti_Logo.svg.png" alt="Khalti" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #5c2d91; font-weight: 800;">Khalti</span></label>
+        <label class="pay-option"><input type="radio" name="payment" value="IME Pay"><span style="flex: 1; color: #d32f2f; font-weight: 800;">IME Pay</span></label>
       </div>
 
-      <div id="discountRow" class="discount-row" style="display: none;">
-        <span>Discount:</span>
-        <span id="discountAmount">- Rs. 0</span>
-      </div>
-
-      <div class="discount-row" style="color: #1A1A1A; display: flex;">
-        <span>Delivery Charge:</span>
-        <span id="shippingAmount">Rs. 0</span>
-      </div>
-
-      <div class="total-row">
-        <span>Total:</span>
-        <span id="cartTotal">Rs. 0</span>
-      </div>
+      <div id="discountRow" class="discount-row" style="display: none;"><span>Discount:</span><span id="discountAmount">- Rs. 0</span></div>
+      <div class="discount-row" style="color: var(--text-main);"><span>Delivery Charge:</span><span id="shippingAmount">Rs. 0</span></div>
+      <div class="total-row"><span>Total:</span><span id="cartTotal">Rs. 0</span></div>
       
       <button type="submit" class="place-order-btn" id="orderBtn">Place Order</button>
     </form>
@@ -98,36 +65,20 @@
 </a>
 
 <div class="bottom-nav">
-  <a href="index" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>Home</span>
-  </a>
-  <a href="wishlist" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-    <span>Wishlist</span>
-  </a>
-  <a href="cart" class="nav-item active">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-    <span>Cart</span>
-  </a>
-  <a href="profile" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Profile</span>
-  </a>
+  <a href="/store/" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
+  <a href="wishlist" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Wishlist</span></a>
+  <a href="cart" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>Cart</span></a>
+  <a href="profile" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../shared/supabase.js"></script>
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('dark-mode');
 
 let cart = JSON.parse(localStorage.getItem('uma_cart')) || [];
-let appliedCoupon = null;
-let discountAmount = 0;
-let shippingFee = 0;
-let currentUser = null;
+let appliedCoupon = null; let discountAmount = 0; let shippingFee = 0; let currentUser = null;
 
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   if (session) {
@@ -146,15 +97,9 @@ async function loadAvailableCoupons() {
   const { data } = await supabaseClient.from('coupons').select('*').eq('is_active', true);
   const container = document.getElementById('couponList');
   if (data && data.length > 0) {
-    data.forEach(c => {
-      container.innerHTML += `
-        <div class="coupon-chip" onclick="applyCoupon('${c.code}')">
-          🎟️ ${c.code} - ${c.discount_percent}% OFF
-        </div>
-      `;
-    });
+    data.forEach(c => { container.innerHTML += `<div class="coupon-chip" onclick="applyCoupon('${c.code}')" style="background: #FFF8E1; border: 1px dashed #F59E0B; color: #B45309; padding: 8px 15px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;">🎟️ ${c.code} - ${c.discount_percent}% OFF</div>`; });
   } else {
-    container.innerHTML = '<p style="font-size: 13px; color: #666;">No active coupons available right now.</p>';
+    container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted);">No coupons available.</p>';
   }
 }
 
@@ -167,13 +112,11 @@ function renderCart() {
   const shippingSpan = document.getElementById('shippingAmount');
   const district = document.getElementById('cDistrict').value;
   
-  itemsDiv.innerHTML = '';
-  let subtotal = 0;
+  itemsDiv.innerHTML = ''; let subtotal = 0;
 
   if (cart.length === 0) {
-    itemsDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px; font-weight: 500;">Your cart is empty.</p>';
-    checkoutBox.style.display = 'none';
-    return;
+    itemsDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">Your cart is empty.</p>';
+    checkoutBox.style.display = 'none'; return;
   }
 
   checkoutBox.style.display = 'block';
@@ -185,7 +128,7 @@ function renderCart() {
         <img src="${item.image}" alt="${item.name}">
         <div class="cart-details">
           <h3>${item.name}</h3>
-          <p style="font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 500;">Size: ${item.size || 'Free'}</p>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Size: ${item.size || 'Free'}</p>
           <p class="price">Rs. ${item.price}</p>
           <div class="qty-controls">
             <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
@@ -194,148 +137,65 @@ function renderCart() {
             <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
   });
 
   const ktmValley = ['Kathmandu', 'Lalitpur', 'Bhaktapur'];
-  if (ktmValley.includes(district)) {
-    shippingFee = 0;
-    shippingSpan.textContent = 'Free';
-    shippingSpan.style.color = '#10B981';
-  } else if (district === "") {
-    shippingFee = 0;
-    shippingSpan.textContent = 'Select District';
-    shippingSpan.style.color = '#EF4444';
-  } else {
-    shippingFee = 220;
-    shippingSpan.textContent = 'Rs. 220';
-    shippingSpan.style.color = '#1A1A1A';
-  }
+  if (ktmValley.includes(district)) { shippingFee = 0; shippingSpan.textContent = 'Free'; shippingSpan.style.color = '#10B981'; } 
+  else if (district === "") { shippingFee = 0; shippingSpan.textContent = 'Select District'; shippingSpan.style.color = '#EF4444'; } 
+  else { shippingFee = 220; shippingSpan.textContent = 'Rs. 220'; shippingSpan.style.color = 'var(--text-main)'; }
 
-  if (appliedCoupon) {
-    discountAmount = Math.round(subtotal * (appliedCoupon.discount_percent / 100));
-    discountRow.style.display = 'flex';
-    discountSpan.textContent = `- Rs. ${discountAmount}`;
-  } else {
-    discountRow.style.display = 'none';
-    discountAmount = 0;
-  }
+  if (appliedCoupon) { discountAmount = Math.round(subtotal * (appliedCoupon.discount_percent / 100)); discountRow.style.display = 'flex'; discountSpan.textContent = `- Rs. ${discountAmount}`; } 
+  else { discountRow.style.display = 'none'; discountAmount = 0; }
 
-  const finalTotal = subtotal - discountAmount + shippingFee;
-  totalSpan.textContent = `Rs. ${finalTotal}`;
+  totalSpan.textContent = `Rs. ${subtotal - discountAmount + shippingFee}`;
 }
 
 document.getElementById('cDistrict').addEventListener('change', renderCart);
-
-window.changeQty = function(index, change) {
-  cart[index].quantity += change;
-  if (cart[index].quantity <= 0) {
-    cart.splice(index, 1);
-  }
-  localStorage.setItem('uma_cart', JSON.stringify(cart));
-  renderCart();
-}
-
-window.removeItem = function(index) {
-  cart.splice(index, 1);
-  localStorage.setItem('uma_cart', JSON.stringify(cart));
-  renderCart();
-}
+window.changeQty = function(index, change) { cart[index].quantity += change; if (cart[index].quantity <= 0) cart.splice(index, 1); localStorage.setItem('uma_cart', JSON.stringify(cart)); renderCart(); }
+window.removeItem = function(index) { cart.splice(index, 1); localStorage.setItem('uma_cart', JSON.stringify(cart)); renderCart(); }
 
 window.applyCoupon = async function(codeFromChip) {
-  let code = '';
-  if (typeof codeFromChip === 'string') {
-    code = codeFromChip.toUpperCase();
-    document.getElementById('couponInput').value = code;
-  } else {
-    code = document.getElementById('couponInput').value.trim().toUpperCase();
-  }
-  
-  const msg = document.getElementById('couponMsg');
+  let code = typeof codeFromChip === 'string' ? codeFromChip.toUpperCase() : document.getElementById('couponInput').value.trim().toUpperCase();
   if (!code) return;
-
   const { data, error } = await supabaseClient.from('coupons').select('*').eq('code', code).eq('is_active', true).single();
-
-  if (error || !data) {
-    msg.textContent = 'Invalid or expired coupon code.';
-    msg.style.color = '#EF4444';
-    appliedCoupon = null;
-    renderCart();
-  } else {
-    appliedCoupon = data;
-    msg.textContent = `Coupon applied! You got ${data.discount_percent}% OFF.`;
-    msg.style.color = '#10B981';
-    renderCart();
-  }
+  if (error || !data) { alert('Invalid coupon.'); appliedCoupon = null; renderCart(); } 
+  else { appliedCoupon = data; alert(`Coupon ${data.code} applied!`); renderCart(); }
 }
 
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  
   const district = document.getElementById('cDistrict').value;
-  if (!district) {
-    alert('Please select your district for delivery.');
-    return;
-  }
+  if (!district) { alert('Please select district.'); return; }
 
   document.getElementById('loadingOverlay').style.display = 'flex';
-
   const name = document.getElementById('cName').value;
   const phone = document.getElementById('cPhone').value;
   const address = document.getElementById('cAddress').value;
   const fullAddress = `${address}, ${district}`;
   const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const finalTotal = subtotal - discountAmount + shippingFee;
-
+  const finalTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) - discountAmount + shippingFee;
   localStorage.setItem('uma_user_info', JSON.stringify({ name, phone, address, district }));
 
-  const userEmail = currentUser ? currentUser.email : 'guest';
+  const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ customer_name: name, phone, address: fullAddress, total_amount: finalTotal, payment_method: paymentMethod, customer_email: currentUser ? currentUser.email : 'guest' }]).select();
 
-  const { data: orderData, error: orderError } = await supabaseClient
-    .from('orders')
-    .insert([{ customer_name: name, phone: phone, address: fullAddress, total_amount: finalTotal, payment_method: paymentMethod, customer_email: userEmail }])
-    .select();
+  if (orderError) { alert('Error: ' + orderError.message); document.getElementById('loadingOverlay').style.display = 'none'; return; }
 
-  if (orderError) {
-    alert('Error placing order: ' + orderError.message);
-    document.getElementById('loadingOverlay').style.display = 'none';
-    return;
-  }
-
-  const orderId = orderData[0].id;
-  const orderItems = cart.map(item => ({
-    order_id: orderId,
-    product_id: item.id,
-    product_name: item.name + (item.size ? ` (Size: ${item.size})` : ''),
-    price: item.price,
-    quantity: item.quantity,
-    image: item.image
-  }));
-
+  const orderItems = cart.map(item => ({ order_id: orderData[0].id, product_id: item.id, product_name: item.name + (item.size ? ` (Size: ${item.size})` : ''), price: item.price, quantity: item.quantity, image: item.image }));
   const { error: itemsError } = await supabaseClient.from('order_items').insert(orderItems);
 
-  if (itemsError) {
-    alert('Error saving items: ' + itemsError.message);
-    document.getElementById('loadingOverlay').style.display = 'none';
-  } else {
+  if (itemsError) { alert('Error: ' + itemsError.message); document.getElementById('loadingOverlay').style.display = 'none'; } 
+  else {
     for (let i = 0; i < cart.length; i++) {
-      const item = cart[i];
-      const { data: product } = await supabaseClient.from('products').select('stock').eq('id', item.id).single();
-      if (product) {
-        const newStock = Math.max(0, product.stock - item.quantity);
-        await supabaseClient.from('products').update({ stock: newStock }).eq('id', item.id);
-      }
+      const { data: product } = await supabaseClient.from('products').select('stock').eq('id', cart[i].id).single();
+      if (product) await supabaseClient.from('products').update({ stock: Math.max(0, product.stock - cart[i].quantity) }).eq('id', cart[i].id);
     }
-    localStorage.removeItem('uma_cart');
-    localStorage.setItem('uma_last_phone', phone);
-    window.location.href = `success.html?id=${orderId}`;
+    localStorage.removeItem('uma_cart'); localStorage.setItem('uma_last_phone', phone);
+    window.location.href = `success?id=${orderData[0].id}`;
   }
 });
 
-loadAvailableCoupons();
-renderCart();
+loadAvailableCoupons(); renderCart();
 </script>
 </body>
 </html>

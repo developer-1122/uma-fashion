@@ -14,7 +14,7 @@
   <a href="/store/" style="text-decoration: none;"><h1 id="storeName">Uma's</h1></a>
   <input type="text" id="searchInput" class="search-bar" placeholder="Search..." oninput="filterProducts()">
   <button onclick="toggleDarkMode()" style="background: none; border: none; font-size: 20px; cursor: pointer; margin-right: 10px;">🌓</button>
-  <a href="cart" class="cart-icon">
+  <a href="cart" class="cart-icon" id="headerCartIcon">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
     <span class="cart-count" id="cartCount">0</span>
   </a>
@@ -25,20 +25,13 @@
 </div>
 
 <div class="container">
-  <div class="filter-row">
-    <div class="category-filters" id="categoryFilters">
-      <button class="filter-btn active" onclick="setCategory('all', this)">All</button>
-    </div>
+  <div class="category-filters" id="categoryFilters">
+    <button class="filter-btn active" onclick="setCategory('all', this)">All</button>
   </div>
 
   <h2 class="section-title">Trending Products</h2>
-  <div id="storeProducts" class="product-grid">
-    <div class="skeleton" style="height: 250px;"></div>
-    <div class="skeleton" style="height: 250px;"></div>
-    <div class="skeleton" style="height: 250px;"></div>
-    <div class="skeleton" style="height: 250px;"></div>
-  </div>
-  <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreProducts()" style="display: none;">Load More Products</button>
+  <div id="storeProducts" class="product-grid"></div>
+  <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreProducts()" style="display: none; width: 100%; padding: 15px; background: var(--card-bg); color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px;">Load More Products</button>
 </div>
 
 <a href="https://wa.me/9779851169457" class="whatsapp-float" target="_blank">
@@ -46,22 +39,10 @@
 </a>
 
 <div class="bottom-nav">
-  <a href="/store/" class="nav-item active">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>Home</span>
-  </a>
-  <a href="wishlist" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-    <span>Wishlist</span>
-  </a>
-  <a href="cart" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-    <span>Cart</span>
-  </a>
-  <a href="profile" class="nav-item">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Profile</span>
-  </a>
+  <a href="/store/" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
+  <a href="wishlist" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Wishlist</span></a>
+  <a href="cart" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>Cart</span></a>
+  <a href="profile" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -69,84 +50,33 @@
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('dark-mode');
-
-function toggleDarkMode() {
-  document.body.classList.toggle('dark-mode');
-  localStorage.setItem('uma_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-}
+function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('uma_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); }
 
 async function loadSettings() {
   const { data } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
   if (data) {
-    if (data.store_name) {
-      document.getElementById('storeName').textContent = data.store_name.split(' ')[0];
-      document.title = data.store_name;
-    }
-    if (data.announcement_text) {
-      document.getElementById('announcementBar').textContent = data.announcement_text;
-    } else {
-      document.getElementById('announcementBar').style.display = 'none';
-    }
+    if (data.store_name) { document.getElementById('storeName').textContent = data.store_name.split(' ')[0]; document.title = data.store_name; }
+    if (data.announcement_text) { document.getElementById('announcementBar').textContent = data.announcement_text; } else { document.getElementById('announcementBar').style.display = 'none'; }
   }
 }
 
-let allProducts = [];
-let displayedProducts = 10;
-let currentCategory = 'all';
-let currentSearch = '';
-let wishlist = JSON.parse(localStorage.getItem('uma_wishlist')) || [];
-let currentSlide = 0;
-
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.classList.add('show'), 10);
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
-}
+let allProducts = []; let displayedProducts = 10; let currentCategory = 'all'; let currentSearch = ''; let wishlist = JSON.parse(localStorage.getItem('uma_wishlist')) || []; let currentSlide = 0;
 
 async function loadBanners() {
   const { data } = await supabaseClient.from('banners').select('*').eq('is_active', true);
-  const slider = document.getElementById('slider');
-  slider.innerHTML = '';
-  
+  const slider = document.getElementById('slider'); slider.innerHTML = '';
   if (data && data.length > 0) {
-    data.forEach(b => {
-      const link = b.link ? b.link : 'javascript:void(0)';
-      slider.innerHTML += `
-        <a href="${link}" class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${b.image_url}');">
-          <h2>${b.title}</h2>
-          <p>${b.subtitle}</p>
-        </a>
-      `;
-    });
-    
-    setInterval(() => {
-      const slides = document.querySelectorAll('.slide');
-      if (slides.length > 0) {
-        currentSlide = (currentSlide + 1) % slides.length;
-        slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-      }
-    }, 3000);
+    data.forEach(b => { const link = b.link ? b.link : 'javascript:void(0)'; slider.innerHTML += `<a href="${link}" class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${b.image_url}');"><h2>${b.title}</h2><p>${b.subtitle}</p></a>`; });
+    setInterval(() => { const slides = document.querySelectorAll('.slide'); if (slides.length > 0) { currentSlide = (currentSlide + 1) % slides.length; slider.style.transform = `translateX(-${currentSlide * 100}%)`; } }, 3000);
   } else {
-    slider.innerHTML = `
-      <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop');">
-        <h2>Big Fashion Sale</h2>
-        <p>Flat 50% Off on Women's Wear</p>
-      </div>
-    `;
+    slider.innerHTML = `<div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop');"><h2>Big Fashion Sale</h2><p>Flat 50% Off on Women's Wear</p></div>`;
   }
 }
 
 async function loadCategories() {
   const { data } = await supabaseClient.from('categories').select('*');
   const container = document.getElementById('categoryFilters');
-  if (data) {
-    data.forEach(c => {
-      container.innerHTML += `<button class="filter-btn" onclick="setCategory('${c.name}', this)">${c.name}</button>`;
-    });
-  }
+  if (data) { data.forEach(c => { container.innerHTML += `<button class="filter-btn" onclick="setCategory('${c.name}', this)">${c.name}</button>`; }); }
 }
 
 function updateCartCount() {
@@ -156,122 +86,54 @@ function updateCartCount() {
 
 async function loadStoreProducts() {
   const { data, error } = await supabaseClient.from('products').select('*, categories(name)').eq('is_active', true);
-  if (!error && data) {
-    allProducts = data;
-    filterProducts();
-  }
+  if (!error && data) { allProducts = data; filterProducts(); }
 }
 
 function filterProducts() {
   currentSearch = document.getElementById('searchInput').value.toLowerCase();
-  
   let filtered = allProducts;
-
-  if (currentCategory !== 'all') {
-    filtered = filtered.filter(p => p.categories && p.categories.name === currentCategory);
-  }
-
-  if (currentSearch) {
-    filtered = filtered.filter(p => p.name.toLowerCase().includes(currentSearch));
-  }
-
+  if (currentCategory !== 'all') filtered = filtered.filter(p => p.categories && p.categories.name === currentCategory);
+  if (currentSearch) filtered = filtered.filter(p => p.name.toLowerCase().includes(currentSearch));
   filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  
-  displayedProducts = 10;
-  renderProducts(filtered);
+  displayedProducts = 10; renderProducts(filtered);
 }
 
 function renderProducts(list) {
   const grid = document.getElementById('storeProducts');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
   grid.innerHTML = '';
-
-  if (list.length === 0) {
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); font-weight: 500;">No products found.</p>';
-    loadMoreBtn.style.display = 'none';
-    return;
-  }
-
+  if (list.length === 0) { grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No products found.</p>'; loadMoreBtn.style.display = 'none'; return; }
   const toDisplay = list.slice(0, displayedProducts);
-
   toDisplay.forEach(p => {
     const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200';
     const isWishlisted = wishlist.includes(p.id);
     const isOutOfStock = p.stock <= 0;
-    const isLowStock = p.stock > 0 && p.stock <= 5;
-    
-    let discountHtml = '';
-    let mrpHtml = '';
-    
-    if (p.mrp && p.mrp > p.price) {
-      const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100);
-      discountHtml = `<span class="discount-tag">${discountPercent}% OFF</span>`;
-      mrpHtml = `<span class="mrp">Rs. ${p.mrp}</span>`;
-    }
-
+    let discountHtml = '', mrpHtml = '', tagHtml = '';
+    if (p.mrp && p.mrp > p.price) { const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100); discountHtml = `<span class="discount-tag">${discountPercent}% OFF</span>`; mrpHtml = `<span class="mrp">Rs. ${p.mrp}</span>`; }
+    if (p.tag) { tagHtml = `<span class="custom-tag">${p.tag}</span>`; }
     let outOfStockHtml = isOutOfStock ? `<div style="position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); display:flex; align-items:center; justify-content:center; z-index:5;"><span style="background:#1A1A1A; color:white; padding:8px 16px; font-weight:bold; font-size:12px; border-radius:4px;">OUT OF STOCK</span></div>` : '';
-    let urgencyHtml = isLowStock ? `<span class="urgency-tag">Only ${p.stock} left!</span>` : '';
 
     grid.innerHTML += `
       <div class="product-card">
-        ${discountHtml}
-        ${urgencyHtml}
-        ${outOfStockHtml}
+        ${discountHtml} ${tagHtml} ${outOfStockHtml}
         <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(event, ${p.id}, this)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         </button>
         <a href="product?id=${p.id}" style="text-decoration: none; color: inherit;">
-          <img src="${imageUrl}" alt="${p.name}">
-          <div class="product-info">
-            <h3>${p.name}</h3>
-            <div class="price-row">
-              <p class="price">Rs. ${p.price}</p>
-              ${mrpHtml}
-            </div>
-          </div>
+          <img src="${imageUrl}" id="img_${p.id}" alt="${p.name}">
+          <div class="product-info"><h3>${p.name}</h3><div class="price-row"><p class="price">Rs. ${p.price}</p>${mrpHtml}</div></div>
         </a>
-      </div>
-    `;
+      </div>`;
   });
-
-  if (displayedProducts >= list.length) {
-    loadMoreBtn.style.display = 'none';
-  } else {
-    loadMoreBtn.style.display = 'block';
-  }
-  
+  if (displayedProducts >= list.length) loadMoreBtn.style.display = 'none'; else loadMoreBtn.style.display = 'block';
   window.currentFilteredList = list;
 }
 
-window.loadMoreProducts = function() {
-  displayedProducts += 10;
-  renderProducts(window.currentFilteredList);
-}
+window.loadMoreProducts = function() { displayedProducts += 10; renderProducts(window.currentFilteredList); }
+window.toggleWishlist = function(e, id, btn) { e.preventDefault(); if (wishlist.includes(id)) { wishlist = wishlist.filter(item => item !== id); btn.classList.remove('active'); } else { wishlist.push(id); btn.classList.add('active'); } localStorage.setItem('uma_wishlist', JSON.stringify(wishlist)); }
+window.setCategory = function(cat, btn) { currentCategory = cat; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filterProducts(); }
 
-window.toggleWishlist = function(e, id, btn) {
-  e.preventDefault();
-  if (wishlist.includes(id)) {
-    wishlist = wishlist.filter(item => item !== id);
-    btn.classList.remove('active');
-  } else {
-    wishlist.push(id);
-    btn.classList.add('active');
-  }
-  localStorage.setItem('uma_wishlist', JSON.stringify(wishlist));
-}
-
-window.setCategory = function(cat, btn) {
-  currentCategory = cat;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  filterProducts();
-}
-
-updateCartCount();
-loadSettings();
-loadBanners();
-loadCategories();
-loadStoreProducts();
+updateCartCount(); loadSettings(); loadBanners(); loadCategories(); loadStoreProducts();
 </script>
 </body>
 </html>
