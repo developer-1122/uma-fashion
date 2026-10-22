@@ -13,13 +13,13 @@
     <button id="logoutBtn">Logout</button>
   </header>
   <nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="products.html">Products</a>
-    <a href="categories.html">Categories</a>
-    <a href="orders.html">Orders</a>
-    <a href="banners.html">Slider</a>
-    <a href="coupons.html">Coupons</a>
-    <a href="settings.html" class="active">Settings</a>
+    <a href="dashboard">Dashboard</a>
+    <a href="products">Products</a>
+    <a href="categories">Categories</a>
+    <a href="orders">Orders</a>
+    <a href="banners">Slider</a>
+    <a href="coupons">Coupons</a>
+    <a href="settings" class="active">Settings</a>
   </nav>
   <main>
     <h2>Store Settings</h2>
@@ -50,13 +50,13 @@
 <script>
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   if (!session || session.user.email !== 'donnhero6@gmail.com') {
-    window.location.href = 'index.html';
+    window.location.href = 'index';
   }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
-  window.location.href = 'index.html';
+  window.location.href = 'index';
 });
 
 async function loadSettings() {

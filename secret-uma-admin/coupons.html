@@ -13,11 +13,11 @@
     <button id="logoutBtn">Logout</button>
   </header>
   <nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="products.html">Products</a>
-    <a href="orders.html">Orders</a>
-    <a href="banners.html">Slider</a>
-    <a href="coupons.html" class="active">Coupons</a>
+    <a href="dashboard">Dashboard</a>
+    <a href="products">Products</a>
+    <a href="orders">Orders</a>
+    <a href="banners">Slider</a>
+    <a href="coupons" class="active">Coupons</a>
   </nav>
   <main>
     <h2>Manage Coupons</h2>
@@ -37,13 +37,13 @@
 <script>
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   if (!session || session.user.email !== 'donnhero6@gmail.com') {
-    window.location.href = 'index.html';
+    window.location.href = 'index';
   }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
-  window.location.href = 'index.html';
+  window.location.href = 'index';
 });
 
 document.getElementById('couponForm').addEventListener('submit', async (e) => {

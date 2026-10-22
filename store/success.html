@@ -37,7 +37,7 @@
     Confirm on WhatsApp
   </a>
   
-  <a href="index.html" class="btn-continue">Continue Shopping</a>
+  <a href="index" class="btn-continue">Continue Shopping</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -52,7 +52,7 @@ async function loadReceipt() {
   const orderId = params.get('id');
   
   if (!orderId) {
-    window.location.href = 'index.html';
+    window.location.href = 'index';
     return;
   }
 
@@ -63,7 +63,7 @@ async function loadReceipt() {
     .single();
 
   if (error || !order) {
-    window.location.href = 'index.html';
+    window.location.href = 'index';
     return;
   }
 
