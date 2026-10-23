@@ -5,26 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Orders - Uma's Fashion Wear</title>
 <link rel="stylesheet" href="../shared/style.css">
-<style>
-.filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-.filter-bar input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; flex: 1; min-width: 150px; }
-.tab-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: 600; white-space: nowrap; }
-.tab-btn.active { background: #1C3B2D; color: white; border-color: #1C3B2D; }
-.export-btn { padding: 10px 20px; background: #C59B5F; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-</style>
+<style>.filter-bar { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; } .filter-bar input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; flex: 1; min-width: 150px; } .tab-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: 600; white-space: nowrap; } .tab-btn.active { background: #1C3B2D; color: white; border-color: #1C3B2D; } .export-btn { padding: 10px 20px; background: #C59B5F; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }</style>
 </head>
 <body>
 <div class="dashboard">
   <header><h1>Uma's Fashion Wear - Admin</h1><button id="logoutBtn">Logout</button></header>
-  <nav>
-    <a href="dashboard.html">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html" class="active">Orders</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a>
-  </nav>
+  <nav><a href="dashboard.html">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html" class="active">Orders</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a></nav>
   <main>
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h2>Customer Orders</h2>
-      <button class="export-btn" onclick="exportCSV()">Export CSV</button>
-    </div>
-    
+    <div style="display: flex; justify-content: space-between; align-items: center;"><h2>Customer Orders</h2><button class="export-btn" onclick="exportCSV()">Export CSV</button></div>
     <div class="filter-bar">
       <input type="text" id="searchInput" placeholder="Search by Name or Phone..." oninput="filterOrders()">
       <button class="tab-btn active" onclick="setFilter('all', this)">All</button>
@@ -33,7 +21,6 @@
       <button class="tab-btn" onclick="setFilter('Delivered', this)">Delivered</button>
       <button class="tab-btn" onclick="setFilter('Cancelled', this)">Cancelled</button>
     </div>
-
     <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading orders...</p>
     <div id="ordersList"></div>
   </main>
@@ -56,8 +43,7 @@ async function loadOrders() {
 window.setFilter = function(status, btn) { currentFilter = status; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filterOrders(); }
 
 window.filterOrders = function() {
-  currentSearch = document.getElementById('searchInput').value.toLowerCase();
-  const list = document.getElementById('ordersList');
+  currentSearch = document.getElementById('searchInput').value.toLowerCase(); const list = document.getElementById('ordersList');
   let filtered = allOrders;
   if (currentFilter !== 'all') filtered = filtered.filter(o => o.status === currentFilter);
   if (currentSearch) filtered = filtered.filter(o => o.customer_name.toLowerCase().includes(currentSearch) || o.phone.includes(currentSearch));
@@ -81,14 +67,8 @@ window.filterOrders = function() {
         <div class="order-items-list">${itemsHtml}</div>
         <div class="order-total">Total: Rs. ${order.total_amount}</div>
         
-        <div class="admin-note-box">
-          <input type="text" id="note_${order.id}" placeholder="Write a custom message..." value="${order.admin_note || ''}">
-          <button onclick="saveNote(${order.id})">Save</button>
-        </div>
-        <div class="admin-note-box">
-          <input type="text" id="track_${order.id}" placeholder="Tracking Number (Courier)" value="${order.tracking_number || ''}">
-          <button onclick="saveTracking(${order.id})">Save</button>
-        </div>
+        <div class="admin-note-box"><input type="text" id="note_${order.id}" placeholder="Write a custom message..." value="${order.admin_note || ''}"><button onclick="saveNote(${order.id})">Save</button></div>
+        <div class="admin-note-box"><input type="text" id="track_${order.id}" placeholder="Tracking Number (Courier)" value="${order.tracking_number || ''}"><button onclick="saveTracking(${order.id})">Save</button></div>
 
         <div class="order-actions">
           <select class="status-select" style="margin-top: 0;" onchange="updateStatus(${order.id}, this.value)">

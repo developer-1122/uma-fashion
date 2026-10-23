@@ -6,31 +6,22 @@
 <title>Dashboard - Uma's Fashion Wear</title>
 <link rel="stylesheet" href="../shared/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-.alert-card { background: #FFF1F2; border-left: 5px solid #EF4444; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-.alert-card p { font-size: 14px; color: #991B1B; font-weight: 600; margin: 0; }
-.alert-card span { background: #EF4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-</style>
+<style>.alert-card { background: #FFF1F2; border-left: 5px solid #EF4444; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; } .alert-card p { font-size: 14px; color: #991B1B; font-weight: 600; margin: 0; } .alert-card span { background: #EF4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }</style>
 </head>
 <body>
 <div class="dashboard">
   <header><h1>Uma's Fashion Wear</h1><button id="logoutBtn">Logout</button></header>
-  <nav>
-    <a href="dashboard.html" class="active">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html">Orders</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a>
-  </nav>
+  <nav><a href="dashboard.html" class="active">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html">Orders</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a></nav>
   <main>
     <h2>Overview</h2>
     <p id="loadingText" style="color: #666; margin-bottom: 20px;">Loading data...</p>
-    
     <div class="stat-grid" id="statsGrid" style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
       <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-info"><h3>Products</h3><p id="productCount">0</p></div></div>
       <div class="stat-card" style="border-left-color: #C59B5F;"><div class="stat-icon" style="background: #FDF9F1;">📦</div><div class="stat-info"><h3>Orders</h3><p id="orderCount">0</p></div></div>
       <div class="stat-card" style="border-left-color: #2196F3;"><div class="stat-icon" style="background: #E3F2FD;">👥</div><div class="stat-info"><h3>Customers</h3><p id="customerCount">0</p></div></div>
       <div class="stat-card" style="border-left-color: #1C3B2D;"><div class="stat-icon" style="background: #E8F0EC;">💰</div><div class="stat-info"><h3>Revenue</h3><p id="totalRevenue">Rs. 0</p></div></div>
     </div>
-
     <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-top: 30px; display: none;" id="chartContainer"><h3 style="font-size: 16px; color: #1A1A1A; margin-bottom: 15px; font-weight: 800;">📈 Sales Last 7 Days</h3><canvas id="salesChart"></canvas></div>
-
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px;" id="lowerGrid">
       <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);"><h3 style="font-size: 16px; color: #1A1A1A; margin-bottom: 15px; font-weight: 800;">⚠️ Low Stock Alerts</h3><div id="lowStockList"></div></div>
       <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);"><h3 style="font-size: 16px; color: #1A1A1A; margin-bottom: 15px; font-weight: 800;">🔥 Top Selling Products</h3><div id="topSellingList"></div></div>
@@ -56,7 +47,6 @@ async function checkAuth() {
     document.getElementById('productCount').textContent = productRes.count || 0;
     const orders = orderRes.data || [];
     document.getElementById('orderCount').textContent = orders.length;
-    
     const uniquePhones = new Set(orders.map(o => o.phone));
     document.getElementById('customerCount').textContent = uniquePhones.size;
 
@@ -66,12 +56,10 @@ async function checkAuth() {
     document.getElementById('totalRevenue').textContent = `Rs. ${revenue}`;
 
     const lowStockList = document.getElementById('lowStockList');
-    if (lowStockRes.data && lowStockRes.data.length > 0) { lowStockList.innerHTML = ''; lowStockRes.data.forEach(p => { lowStockList.innerHTML += `<div class="alert-card"><p>${p.name}</p><span>Only ${p.stock} left</span></div>`; }); } 
-    else { lowStockList.innerHTML = '<p style="font-size: 14px; color: #666;">All products are well stocked.</p>'; }
+    if (lowStockRes.data && lowStockRes.data.length > 0) { lowStockList.innerHTML = ''; lowStockRes.data.forEach(p => { lowStockList.innerHTML += `<div class="alert-card"><p>${p.name}</p><span>Only ${p.stock} left</span></div>`; }); } else { lowStockList.innerHTML = '<p style="font-size: 14px; color: #666;">All products are well stocked.</p>'; }
 
     const recentOrdersList = document.getElementById('recentOrdersList');
-    if (recentOrdersRes.data && recentOrdersRes.data.length > 0) { recentOrdersList.innerHTML = ''; recentOrdersRes.data.forEach(o => { recentOrdersList.innerHTML += `<div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px;"><span style="font-weight: 600;">#${o.id} - ${o.customer_name}</span><span style="color: #C59B5F; font-weight: 800;">Rs. ${o.total_amount}</span></div>`; }); } 
-    else { recentOrdersList.innerHTML = '<p style="font-size: 14px; color: #666;">No orders yet.</p>'; }
+    if (recentOrdersRes.data && recentOrdersRes.data.length > 0) { recentOrdersList.innerHTML = ''; recentOrdersRes.data.forEach(o => { recentOrdersList.innerHTML += `<div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px;"><span style="font-weight: 600;">#${o.id} - ${o.customer_name}</span><span style="color: #C59B5F; font-weight: 800;">Rs. ${o.total_amount}</span></div>`; }); } else { recentOrdersList.innerHTML = '<p style="font-size: 14px; color: #666;">No orders yet.</p>'; }
 
     const topSellingList = document.getElementById('topSellingList');
     if (orderItemsRes.data && orderItemsRes.data.length > 0) {
@@ -81,10 +69,7 @@ async function checkAuth() {
     } else { topSellingList.innerHTML = '<p style="font-size: 14px; color: #666;">No sales data yet.</p>'; }
 
     document.getElementById('chartContainer').style.display = 'block';
-    new Chart(document.getElementById('salesChart').getContext('2d'), {
-      type: 'line', data: { labels: Object.keys(last7Days), datasets: [{ label: 'Sales', data: Object.values(last7Days), borderColor: '#1C3B2D', backgroundColor: 'rgba(28, 59, 45, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-    });
+    new Chart(document.getElementById('salesChart').getContext('2d'), { type: 'line', data: { labels: Object.keys(last7Days), datasets: [{ label: 'Sales', data: Object.values(last7Days), borderColor: '#1C3B2D', backgroundColor: 'rgba(28, 59, 45, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
 
     document.getElementById('loadingText').style.display = 'none'; document.getElementById('statsGrid').style.display = 'grid';
   } catch (err) { document.getElementById('loadingText').textContent = 'Failed to load data.'; }
