@@ -128,7 +128,7 @@ function renderCart() {
         <img src="${item.image}" alt="${item.name}">
         <div class="cart-details">
           <h3>${item.name}</h3>
-          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Size: ${item.size || 'Free'}</p>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Size: ${item.size || 'Free'} | Color: ${item.color || 'Default'}</p>
           <p class="price">Rs. ${item.price}</p>
           <div class="qty-controls">
             <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
@@ -181,7 +181,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
 
   if (orderError) { alert('Error: ' + orderError.message); document.getElementById('loadingOverlay').style.display = 'none'; return; }
 
-  const orderItems = cart.map(item => ({ order_id: orderData[0].id, product_id: item.id, product_name: item.name + (item.size ? ` (Size: ${item.size})` : ''), price: item.price, quantity: item.quantity, image: item.image }));
+  const orderItems = cart.map(item => ({ order_id: orderData[0].id, product_id: item.id, product_name: item.name + (item.size ? ` (Size: ${item.size}, Color: ${item.color})` : ''), price: item.price, quantity: item.quantity, image: item.image }));
   const { error: itemsError } = await supabaseClient.from('order_items').insert(orderItems);
 
   if (itemsError) { alert('Error: ' + itemsError.message); document.getElementById('loadingOverlay').style.display = 'none'; } 

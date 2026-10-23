@@ -23,6 +23,7 @@
       <input type="text" id="pTag" placeholder="Tag (e.g. New, Trending, Best Seller)">
       <select id="pCategory" required><option value="">Select Category</option></select>
       <input type="text" id="pSizes" placeholder="Sizes (e.g. S, M, L, XL)" required>
+      <input type="text" id="pColors" placeholder="Colors (e.g. Red, Blue, Black)">
       <input type="number" id="pStock" placeholder="Stock Quantity" required>
       <input type="file" id="pFiles" accept="image/*" multiple>
       <textarea id="pDesc" placeholder="Description"></textarea>
@@ -55,8 +56,13 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   e.preventDefault(); const saveBtn = document.getElementById('saveBtn'); saveBtn.textContent = 'Processing...'; saveBtn.disabled = true;
   const id = document.getElementById('pId').value; const name = document.getElementById('pName').value; const price = document.getElementById('pPrice').value;
   const mrp = document.getElementById('pMrp').value || null; const tag = document.getElementById('pTag').value || null;
-  const category_id = document.getElementById('pCategory').value; const sizesArray = document.getElementById('pSizes').value.split(',').map(s => s.trim());
+  const category_id = document.getElementById('pCategory').value; 
+  
+  const sizesArray = document.getElementById('pSizes').value.split(',').map(s => s.trim()).filter(s => s);
+  const colorsArray = document.getElementById('pColors').value.split(',').map(c => c.trim()).filter(c => c);
+  
   const stock = document.getElementById('pStock').value; const description = document.getElementById('pDesc').value; const files = document.getElementById('pFiles').files;
+  
   let uploadedUrls = currentImages;
   if (files.length > 0) {
     uploadedUrls = [];
@@ -67,10 +73,12 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
       const { data: publicUrlData } = supabaseClient.storage.from('product-media').getPublicUrl(fileName); uploadedUrls.push(publicUrlData.publicUrl);
     }
   }
-  const productData = { name, price, mrp, tag, category_id, stock, description, sizes: sizesArray, images: uploadedUrls };
+  
+  const productData = { name, price, mrp, tag, category_id, stock, description, sizes: sizesArray, colors: colorsArray, images: uploadedUrls };
   let error;
   if (id) { const res = await supabaseClient.from('products').update(productData).eq('id', id); error = res.error; } 
   else { const res = await supabaseClient.from('products').insert([productData]); error = res.error; }
+  
   if (error) { alert('Database Error: ' + error.message); } else { cancelEdit(); loadProducts(); }
   saveBtn.textContent = 'Save Product'; saveBtn.disabled = false;
 });
@@ -90,7 +98,11 @@ window.filterAdminProducts = function() {
     list.innerHTML += `
       <div class="product-item">
         <img src="${img}" loading="lazy" alt="${p.name}">
-        <div style="flex: 1;"><h3>${p.name} ${p.tag ? `<span style="background:#C59B5F; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">${p.tag}</span>` : ''}</h3><p>Rs. ${p.price} ${mrpText} | Stock: ${p.stock} | ${catName}</p></div>
+        <div style="flex: 1;">
+            <h3>${p.name} ${p.tag ? `<span style="background:#C59B5F; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">${p.tag}</span>` : ''}</h3>
+            <p>Rs. ${p.price} ${mrpText} | Stock: ${p.stock} | ${catName}</p>
+            <p style="font-size:12px; color:#888;">Images: ${p.images ? p.images.length : 0} | Colors: ${p.colors ? p.colors.join(', ') : 'None'}</p>
+        </div>
         <button onclick='editProduct(${JSON.stringify(p)})' style="background: #E8F0EC; color: #1C3B2D; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Edit</button>
         <button onclick="deleteProduct(${p.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
       </div>`;
@@ -100,7 +112,9 @@ window.filterAdminProducts = function() {
 window.editProduct = function(p) {
   document.getElementById('pId').value = p.id; document.getElementById('pName').value = p.name; document.getElementById('pPrice').value = p.price;
   document.getElementById('pMrp').value = p.mrp || ''; document.getElementById('pTag').value = p.tag || ''; document.getElementById('pCategory').value = p.category_id;
-  document.getElementById('pSizes').value = p.sizes ? p.sizes.join(', ') : ''; document.getElementById('pStock').value = p.stock; document.getElementById('pDesc').value = p.description || '';
+  document.getElementById('pSizes').value = p.sizes ? p.sizes.join(', ') : '';
+  document.getElementById('pColors').value = p.colors ? p.colors.join(', ') : '';
+  document.getElementById('pStock').value = p.stock; document.getElementById('pDesc').value = p.description || '';
   currentImages = p.images || []; document.getElementById('formTitle').textContent = 'Edit Product'; document.getElementById('saveBtn').textContent = 'Update Product';
   document.getElementById('cancelBtn').style.display = 'block'; window.scrollTo(0, 0);
 }
