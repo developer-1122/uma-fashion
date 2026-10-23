@@ -3,70 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1C3B2D">
+<meta name="theme-color" content="#FFFFFF">
 <title>My Account - Uma's Fashion Wear</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="/store/style.css">
-<style>
-.rewards-card { background: linear-gradient(135deg, #1C3B2D 0%, #2a5844 100%); color: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 20px rgba(28,59,45,0.3); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-.rewards-info h3 { font-size: 14px; font-weight: 600; opacity: 0.8; margin-bottom: 5px; }
-.rewards-info p { font-size: 32px; font-weight: 800; margin: 0; }
-.rewards-icon { font-size: 50px; }
-</style>
 </head>
 <body>
-<header><h1 style="font-size: 20px; margin: 0; flex: 1; text-align: center; font-weight: 800;">My Account</h1></header>
+<header>
+  <a href="/store/" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">
+    <img src="/store/logo.jpg" alt="Uma's Fashion Wear" style="height: 36px; width: 36px; border-radius: 50%; object-fit: cover;">
+  </a>
+  <div style="flex: 1; display: flex; justify-content: center;">
+    <h1 style="font-size: 18px; margin: 0; font-weight: 800;">My Account</h1>
+  </div>
+  <div style="width: 36px;"></div>
+</header>
 
-<div class="container" style="margin-top: 20px;">
-  <div id="authSection" style="display: block;">
-    <div class="profile-card">
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</div>
-        <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</div>
-      </div>
-      <form id="loginForm" class="auth-form">
+<div id="authSection" class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>Welcome Back</h2>
+      <p>Login to your account</p>
+    </div>
+    
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+    
+    <form id="loginForm" class="auth-form">
+      <div class="input-group">
         <input type="email" id="loginEmail" placeholder="Email Address" required>
+      </div>
+      <div class="input-group" style="position:relative;">
         <input type="password" id="loginPassword" placeholder="Password" required>
-        <button type="submit" class="auth-btn">Login</button>
-        <p id="loginMsg" style="text-align: center; font-size: 13px; font-weight: 600; margin-top:10px;"></p>
-      </form>
-      <form id="signupForm" class="auth-form" style="display: none;">
+        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)" style="position:absolute; right:10px; top:14px; background:none; border:none; cursor:pointer;">👁️</button>
+      </div>
+      <button type="submit" class="auth-btn" id="loginBtn">
+        <span>Login</span>
+        <div class="spinner-small" id="loginSpinner"></div>
+      </button>
+      <p id="loginMsg" class="auth-error"></p>
+    </form>
+
+    <form id="signupForm" class="auth-form" style="display: none;">
+      <div class="input-group">
         <input type="text" id="signupName" placeholder="Full Name" required>
+      </div>
+      <div class="input-group">
         <input type="email" id="signupEmail" placeholder="Email Address" required>
+      </div>
+      <div class="input-group" style="position:relative;">
         <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required minlength="6">
-        <button type="submit" class="auth-btn">Create Account</button>
-        <p id="signupMsg" style="text-align: center; font-size: 13px; font-weight: 600; margin-top:10px;"></p>
-      </form>
-    </div>
-    <div class="profile-card" style="text-align: center;">
-      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Or track your order without login</p>
-      <form id="trackForm" style="display: flex; gap: 10px;">
-        <input type="tel" id="trackPhone" placeholder="98XXXXXXXX" pattern="[9][678][0-9]{8}" maxlength="10" required style="flex: 1; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 15px; background: var(--bg-color); color: var(--text-main); outline: none;">
-        <button type="submit" style="padding: 12px 24px; background: var(--primary); color: var(--primary-text); border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer;">Track</button>
-      </form>
-    </div>
+        <button type="button" class="password-toggle" onclick="togglePassword('signupPassword', this)" style="position:absolute; right:10px; top:14px; background:none; border:none; cursor:pointer;">👁️</button>
+      </div>
+      <button type="submit" class="auth-btn" id="signupBtn">
+        <span>Create Account</span>
+        <div class="spinner-small" id="signupSpinner"></div>
+      </button>
+      <p id="signupMsg" class="auth-error"></p>
+    </form>
   </div>
-  
-  <div id="userSection" style="display: none;">
-    <div class="profile-card" style="display: flex; justify-content: space-between; align-items: center;">
-      <div><p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Logged in as</p><strong id="userEmailDisplay" style="font-size: 16px; color: var(--text-main);">user@email.com</strong></div>
-      <button class="logout-profile-btn" onclick="logoutCustomer()">Logout</button>
-    </div>
-    <div id="rewardsContainer"></div>
-  </div>
-  
-  <div id="ordersContainer"></div>
 </div>
+
+<div id="userSection" class="container" style="display: none; margin-top: 20px;">
+  <div class="profile-card" style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+    <div><p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Logged in as</p><strong id="userEmailDisplay" style="font-size: 16px; color: var(--text-main);">user@email.com</strong></div>
+    <button class="logout-profile-btn" onclick="logoutCustomer()" style="padding: 8px 15px; background: #ffebee; color: #f44336; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">Logout</button>
+  </div>
+  <div id="rewardsContainer"></div>
+</div>
+
+<div id="ordersContainer" class="container"></div>
 
 <a href="https://wa.me/9779851169457" class="whatsapp-float" target="_blank">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
 </a>
 
 <div class="bottom-nav">
-  <a href="/store/" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
-  <a href="wishlist" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Wishlist</span></a>
-  <a href="cart" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>Cart</span></a>
-  <a href="profile" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a>
+  <a href="/store/" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
+  <a href="wishlist" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Wishlist</span></a>
+  <a href="cart" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>Cart</span></a>
+  <a href="profile" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -76,9 +94,16 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('dark-mode');
 
 let currentUser = null;
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; } 
+  else { input.type = 'password'; btn.textContent = '👁️'; }
+}
+
 function switchAuthTab(tab) {
-  if (tab === 'login') { document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabSignup').classList.remove('active'); document.getElementById('loginForm').style.display = 'block'; document.getElementById('signupForm').style.display = 'none'; } 
-  else { document.getElementById('tabLogin').classList.remove('active'); document.getElementById('tabSignup').classList.add('active'); document.getElementById('loginForm').style.display = 'none'; document.getElementById('signupForm').style.display = 'block'; }
+  if (tab === 'login') { document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabSignup').classList.remove('active'); document.getElementById('loginForm').style.display = 'flex'; document.getElementById('signupForm').style.display = 'none'; } 
+  else { document.getElementById('tabLogin').classList.remove('active'); document.getElementById('tabSignup').classList.add('active'); document.getElementById('loginForm').style.display = 'none'; document.getElementById('signupForm').style.display = 'flex'; }
 }
 
 async function checkUser() {
@@ -89,25 +114,32 @@ async function checkUser() {
     fetchUserOrders(currentUser.email);
   } else {
     document.getElementById('authSection').style.display = 'block'; document.getElementById('userSection').style.display = 'none'; document.getElementById('ordersContainer').innerHTML = ''; document.getElementById('rewardsContainer').innerHTML = '';
-    const lastPhone = localStorage.getItem('uma_last_phone');
-    if (lastPhone) { document.getElementById('trackPhone').value = lastPhone; fetchOrdersByPhone(lastPhone); }
   }
 }
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault(); const msg = document.getElementById('loginMsg');
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn'); const spinner = document.getElementById('loginSpinner'); const msg = document.getElementById('loginMsg');
+  btn.disabled = true; spinner.style.display = 'block'; msg.textContent = '';
+  
   const { error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value });
-  if (error) { msg.textContent = error.message; msg.style.color = '#EF4444'; } else { msg.textContent = 'Login successful!'; msg.style.color = '#10B981'; checkUser(); }
+  
+  if (error) { msg.textContent = error.message; msg.style.color = '#EF4444'; btn.disabled = false; spinner.style.display = 'none'; } 
+  else { msg.textContent = 'Login successful!'; msg.style.color = '#10B981'; checkUser(); }
 });
 
 document.getElementById('signupForm').addEventListener('submit', async (e) => {
-  e.preventDefault(); const msg = document.getElementById('signupMsg');
+  e.preventDefault();
+  const btn = document.getElementById('signupBtn'); const spinner = document.getElementById('signupSpinner'); const msg = document.getElementById('signupMsg');
+  btn.disabled = true; spinner.style.display = 'block'; msg.textContent = '';
+  
   const { error } = await supabaseClient.auth.signUp({ email: document.getElementById('signupEmail').value, password: document.getElementById('signupPassword').value, options: { data: { full_name: document.getElementById('signupName').value } } });
-  if (error) { msg.textContent = error.message; msg.style.color = '#EF4444'; } else { msg.textContent = 'Account created! Login now.'; msg.style.color = '#10B981'; switchAuthTab('login'); }
+  
+  if (error) { msg.textContent = error.message; msg.style.color = '#EF4444'; btn.disabled = false; spinner.style.display = 'none'; } 
+  else { msg.textContent = 'Account created! Login now.'; msg.style.color = '#10B981'; switchAuthTab('login'); btn.disabled = false; spinner.style.display = 'none'; }
 });
 
 window.logoutCustomer = async function() { await supabaseClient.auth.signOut(); checkUser(); }
-document.getElementById('trackForm').addEventListener('submit', (e) => { e.preventDefault(); fetchOrdersByPhone(document.getElementById('trackPhone').value); });
 
 async function fetchUserOrders(email) {
   document.getElementById('ordersContainer').innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading...</p>';
@@ -117,21 +149,8 @@ async function fetchUserOrders(email) {
   let totalPoints = 0;
   data.forEach(o => { if (o.status !== 'Cancelled' && o.points_earned) totalPoints += o.points_earned; });
   
-  document.getElementById('rewardsContainer').innerHTML = `
-    <div class="rewards-card">
-      <div class="rewards-info"><h3>Loyalty Points</h3><p>${totalPoints}</p></div>
-      <div class="rewards-icon">🏆</div>
-    </div>
-  `;
-
+  document.getElementById('rewardsContainer').innerHTML = `<div style="background: linear-gradient(135deg, #1C3B2D 0%, #2a5844 100%); color: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(28,59,45,0.2); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;"><div><h3 style="font-size: 14px; font-weight: 600; opacity: 0.8; margin-bottom: 5px;">Loyalty Points</h3><p style="font-size: 32px; font-weight: 800; margin: 0;">${totalPoints}</p></div><div style="font-size: 50px;">🏆</div></div>`;
   renderOrders(data, email);
-}
-
-async function fetchOrdersByPhone(phone) {
-  document.getElementById('ordersContainer').innerHTML = '<p style="text-align: center; color: var(--text-muted);">Searching...</p>';
-  const { data } = await supabaseClient.from('orders').select('*, order_items(*)').eq('phone', phone).order('created_at', { ascending: false });
-  if (!data || data.length === 0) { document.getElementById('ordersContainer').innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 20px;">No orders found.</p>'; return; }
-  renderOrders(data, null);
 }
 
 function renderOrders(data, email) {
@@ -139,17 +158,17 @@ function renderOrders(data, email) {
   data.forEach(order => {
     const date = new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     const statusColor = order.status === 'Delivered' ? '#10B981' : (order.status === 'Cancelled' ? '#EF4444' : '#F59E0B');
-    let itemsHtml = ''; order.order_items.forEach(item => { itemsHtml += `<div style="font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: 500;"><span>${item.product_name} x${item.quantity}</span><span>Rs. ${item.price}</span></div>`; });
+    let itemsHtml = ''; order.order_items.forEach(item => { itemsHtml += `<div style="font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: 500;"><span>${item.product_name} x${item.quantity}</span><span>Rs. ${parseFloat(item.price).toLocaleString('en-IN')}</span></div>`; });
     let noteHtml = order.admin_note ? `<div style="background: #FFF8E1; border-left: 3px solid #F59E0B; padding: 10px; border-radius: 6px; margin-bottom: 12px;"><p style="font-size: 12px; color: #B45309; font-weight: 700; margin-bottom: 4px;">Message from Store:</p><p style="font-size: 13px; color: #78350F; font-weight: 500;">${order.admin_note}</p></div>` : '';
     
     let timelineHtml = '';
     if (order.status !== 'Cancelled') {
       const isShipped = order.status === 'Shipped' || order.status === 'Delivered'; const isDelivered = order.status === 'Delivered';
-      timelineHtml = `<div class="timeline"><div class="timeline-step active"><div class="timeline-dot"></div><span>Placed</span></div><div class="timeline-step ${isShipped ? 'active' : ''}"><div class="timeline-dot"></div><span>Shipped</span></div><div class="timeline-step ${isDelivered ? 'active' : ''}"><div class="timeline-dot"></div><span>Delivered</span></div></div>`;
-    } else { timelineHtml = `<div class="timeline"><div class="timeline-step cancelled"><div class="timeline-dot"></div><span>Cancelled</span></div></div>`; }
+      timelineHtml = `<div class="timeline" style="display:flex; justify-content:space-between; align-items:center; margin:20px 0; position:relative;"><div style="position:absolute; top:50%; left:0; width:100%; height:2px; background:var(--border-color); z-index:1; transform:translateY(-50%);"></div><div style="position:relative; z-index:2; background:var(--card-bg); padding:0 5px; display:flex; flex-direction:column; align-items:center; gap:5px;"><div style="width:12px; height:12px; border-radius:50%; background:${isDelivered || isShipped ? 'var(--text-main)' : 'var(--border-color)'}; border:2px solid var(--card-bg);"></div><span style="font-size:11px; font-weight:700; color:${isDelivered || isShipped ? 'var(--text-main)' : 'var(--text-muted)'};">Placed</span></div><div style="position:relative; z-index:2; background:var(--card-bg); padding:0 5px; display:flex; flex-direction:column; align-items:center; gap:5px;"><div style="width:12px; height:12px; border-radius:50%; background:${isDelivered || isShipped ? 'var(--text-main)' : 'var(--border-color)'}; border:2px solid var(--card-bg);"></div><span style="font-size:11px; font-weight:700; color:${isDelivered || isShipped ? 'var(--text-main)' : 'var(--text-muted)'};">Shipped</span></div><div style="position:relative; z-index:2; background:var(--card-bg); padding:0 5px; display:flex; flex-direction:column; align-items:center; gap:5px;"><div style="width:12px; height:12px; border-radius:50%; background:${isDelivered ? 'var(--text-main)' : 'var(--border-color)'}; border:2px solid var(--card-bg);"></div><span style="font-size:11px; font-weight:700; color:${isDelivered ? 'var(--text-main)' : 'var(--text-muted)'};">Delivered</span></div></div>`;
+    } else { timelineHtml = `<div class="timeline" style="display:flex; justify-content:space-between; align-items:center; margin:20px 0; position:relative;"><div style="width:12px; height:12px; border-radius:50%; background:#EF4444; border:2px solid var(--card-bg);"></div><span style="font-size:11px; font-weight:700; color:#EF4444;">Cancelled</span></div>`; }
     
-    let trackingHtml = order.tracking_number ? `<div style="background: rgba(28, 59, 45, 0.05); padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--primary);">📦 Tracking Number: <strong>${order.tracking_number}</strong></div>` : '';
-    let cancelBtnHtml = order.status === 'Pending' ? `<button class="cancel-btn" onclick="cancelOrder(${order.id}, '${order.phone}', '${email}')">Cancel Order</button>` : '';
+    let trackingHtml = order.tracking_number ? `<div style="background: var(--bg-subtle); padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);">📦 Tracking Number: <strong>${order.tracking_number}</strong></div>` : '';
+    let cancelBtnHtml = order.status === 'Pending' ? `<button class="cancel-btn" onclick="cancelOrder(${order.id}, '${order.phone}', '${email}')" style="width: 100%; padding: 12px; background: #FFF1F2; color: #EF4444; border: 1px solid #FECDD3; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 15px;">Cancel Order</button>` : '';
 
     container.innerHTML += `
       <div class="order-status-card" style="border-left-color: ${statusColor};">
@@ -158,8 +177,8 @@ function renderOrders(data, email) {
         ${timelineHtml} 
         ${trackingHtml}
         ${noteHtml}
-        <div style="background: var(--bg-color); padding: 12px; border-radius: 8px; margin-bottom: 12px;">${itemsHtml}</div>
-        <div style="text-align: right; font-weight: 800; font-size: 16px; color: var(--gold);">Total: Rs. ${order.total_amount}</div>
+        <div style="background: var(--bg-subtle); padding: 12px; border-radius: 6px; margin-bottom: 12px;">${itemsHtml}</div>
+        <div style="text-align: right; font-weight: 800; font-size: 16px; color: var(--text-main);">Total: Rs. ${parseFloat(order.total_amount).toLocaleString('en-IN')}</div>
         ${cancelBtnHtml}
       </div>`;
   });

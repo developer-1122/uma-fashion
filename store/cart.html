@@ -20,6 +20,12 @@
   <div id="cartItems" class="cart-container"></div>
 
   <div class="checkout-box" id="checkoutBox" style="display: none;">
+    
+    <div id="authPrompt" style="display: none; text-align: center; margin-bottom: 20px;">
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">Already have an account?</p>
+      <a href="profile" style="display: inline-block; padding: 10px 20px; background: var(--bg-color); color: var(--primary); border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px;">Login for faster checkout</a>
+    </div>
+
     <h2 class="section-title" style="margin-bottom: 15px;">Delivery Details</h2>
     <form id="checkoutForm">
       <input type="text" id="cName" placeholder="Full Name" required>
@@ -83,6 +89,7 @@ let appliedCoupon = null; let discountAmount = 0; let shippingFee = 0; let curre
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   if (session) {
     currentUser = session.user;
+    document.getElementById('authPrompt').style.display = 'none';
     const savedInfo = JSON.parse(localStorage.getItem('uma_user_info'));
     if (savedInfo) {
       document.getElementById('cName').value = savedInfo.name || '';
@@ -90,6 +97,8 @@ supabaseClient.auth.getSession().then(({ data: { session } }) => {
       document.getElementById('cDistrict').value = savedInfo.district || '';
       document.getElementById('cAddress').value = savedInfo.address || '';
     }
+  } else {
+    document.getElementById('authPrompt').style.display = 'block';
   }
 });
 
@@ -129,7 +138,7 @@ function renderCart() {
         <div class="cart-details">
           <h3>${item.name}</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Size: ${item.size || 'Free'} | Color: ${item.color || 'Default'}</p>
-          <p class="price">Rs. ${item.price}</p>
+          <p class="price">Rs. ${parseFloat(item.price).toLocaleString('en-IN')}</p>
           <div class="qty-controls">
             <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
             <span style="font-weight: 700; font-size: 16px;">${item.quantity}</span>
@@ -148,7 +157,7 @@ function renderCart() {
   if (appliedCoupon) { discountAmount = Math.round(subtotal * (appliedCoupon.discount_percent / 100)); discountRow.style.display = 'flex'; discountSpan.textContent = `- Rs. ${discountAmount}`; } 
   else { discountRow.style.display = 'none'; discountAmount = 0; }
 
-  totalSpan.textContent = `Rs. ${subtotal - discountAmount + shippingFee}`;
+  totalSpan.textContent = `Rs. ${(subtotal - discountAmount + shippingFee).toLocaleString('en-IN')}`;
 }
 
 document.getElementById('cDistrict').addEventListener('change', renderCart);
@@ -177,7 +186,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
   const finalTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) - discountAmount + shippingFee;
   localStorage.setItem('uma_user_info', JSON.stringify({ name, phone, address, district }));
 
-  const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ customer_name: name, phone, address: fullAddress, total_amount: finalTotal, payment_method: paymentMethod, customer_email: currentUser ? currentUser.email : 'guest' }]).select();
+  const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ customer_name: name, phone: phone, address: fullAddress, total_amount: finalTotal, payment_method: paymentMethod, customer_email: currentUser ? currentUser.email : 'guest' }]).select();
 
   if (orderError) { alert('Error: ' + orderError.message); document.getElementById('loadingOverlay').style.display = 'none'; return; }
 
