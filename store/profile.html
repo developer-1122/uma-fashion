@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#FFFFFF">
 <title>My Account - Uma's Fashion Wear</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/store/manifest.json">
+<!-- CSS ABSOLUTE PATH -->
 <link rel="stylesheet" href="/store/style.css">
 </head>
 <body>
@@ -82,15 +83,16 @@
 
 <div class="bottom-nav">
   <a href="/store/" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
-  <a href="wishlist" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Wishlist</span></a>
-  <a href="cart" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>Cart</span></a>
-  <a href="profile" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a>
+  <a href="/store/wishlist" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Wishlist</span></a>
+  <a href="/store/cart" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>Cart</span></a>
+  <a href="/store/profile" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../shared/supabase.js"></script>
+<!-- JS ABSOLUTE PATH -->
+<script src="/shared/supabase.js"></script>
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/store/sw.js');
 if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('dark-mode');
 
 let currentUser = null;
@@ -133,10 +135,27 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   const btn = document.getElementById('signupBtn'); const spinner = document.getElementById('signupSpinner'); const msg = document.getElementById('signupMsg');
   btn.disabled = true; spinner.style.display = 'block'; msg.textContent = '';
   
-  const { error } = await supabaseClient.auth.signUp({ email: document.getElementById('signupEmail').value, password: document.getElementById('signupPassword').value, options: { data: { full_name: document.getElementById('signupName').value } } });
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
+
+  // Create Account
+  const { error: signUpError } = await supabaseClient.auth.signUp({ email, password, options: { data: { full_name: document.getElementById('signupName').value } } });
   
-  if (error) { msg.textContent = error.message; msg.style.color = '#EF4444'; btn.disabled = false; spinner.style.display = 'none'; } 
-  else { msg.textContent = 'Account created! Login now.'; msg.style.color = '#10B981'; switchAuthTab('login'); btn.disabled = false; spinner.style.display = 'none'; }
+  if (signUpError) { msg.textContent = signUpError.message; msg.style.color = '#EF4444'; btn.disabled = false; spinner.style.display = 'none'; } 
+  else { 
+    // AUTO LOGIN after signup (Since we disable email confirmation in Supabase)
+    const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (loginError) {
+        msg.textContent = 'Account created! Please login manually.'; 
+        msg.style.color = '#10B981'; 
+        switchAuthTab('login'); 
+        btn.disabled = false; spinner.style.display = 'none';
+    } else {
+        msg.textContent = 'Account created & Logged in!'; 
+        msg.style.color = '#10B981'; 
+        checkUser();
+    }
+  }
 });
 
 window.logoutCustomer = async function() { await supabaseClient.auth.signOut(); checkUser(); }
