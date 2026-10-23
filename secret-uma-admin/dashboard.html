@@ -6,14 +6,18 @@
 <title>Dashboard - Uma's Fashion Wear</title>
 <link rel="stylesheet" href="../shared/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>.alert-card { background: #FFF1F2; border-left: 5px solid #EF4444; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; } .alert-card p { font-size: 14px; color: #991B1B; font-weight: 600; margin: 0; } .alert-card span { background: #EF4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }</style>
+<style>.alert-card { background: #FFF1F2; border-left: 5px solid #EF4444; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; } .alert-card p { font-size: 14px; color: #991B1B; font-weight: 600; margin: 0; } .alert-card span { background: #EF4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; } .wa-btn { background: #25d366; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px; box-shadow: 0 4px 15px rgba(37,211,102,0.3); }</style>
 </head>
 <body>
 <div class="dashboard">
   <header><h1>Uma's Fashion Wear</h1><button id="logoutBtn">Logout</button></header>
-  <nav><a href="dashboard.html" class="active">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html">Orders</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a></nav>
+  <nav><a href="dashboard.html" class="active">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html">Orders</a><a href="customers.html">Customers</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a></nav>
   <main>
-    <h2>Overview</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2>Overview</h2>
+      <button class="wa-btn" onclick="sendWhatsAppSummary()">📲 Send Daily Summary</button>
+    </div>
+    
     <p id="loadingText" style="color: #666; margin-bottom: 20px;">Loading data...</p>
     <div class="stat-grid" id="statsGrid" style="display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
       <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-info"><h3>Products</h3><p id="productCount">0</p></div></div>
@@ -32,6 +36,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../shared/supabase.js"></script>
 <script>
+let globalStats = { orders: 0, revenue: 0, lowStock: 0, customers: 0 };
+
 async function checkAuth() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session || session.user.email !== 'donnhero6@gmail.com') { window.location.href = 'index.html'; return; }
@@ -45,21 +51,23 @@ async function checkAuth() {
     ]);
 
     document.getElementById('productCount').textContent = productRes.count || 0;
-    const orders = orderRes.data || [];
-    document.getElementById('orderCount').textContent = orders.length;
-    const uniquePhones = new Set(orders.map(o => o.phone));
-    document.getElementById('customerCount').textContent = uniquePhones.size;
+    const orders = orderRes.data || []; document.getElementById('orderCount').textContent = orders.length;
+    const uniquePhones = new Set(orders.map(o => o.phone)); document.getElementById('customerCount').textContent = uniquePhones.size;
+    globalStats.customers = uniquePhones.size;
 
     let revenue = 0; let last7Days = {};
     for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); last7Days[d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })] = 0; }
     orders.forEach(o => { if (o.status !== 'Cancelled') { revenue += Number(o.total_amount); const dStr = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); if (last7Days[dStr] !== undefined) last7Days[dStr] += Number(o.total_amount); } });
-    document.getElementById('totalRevenue').textContent = `Rs. ${revenue}`;
+    document.getElementById('totalRevenue').textContent = `Rs. ${revenue}`; globalStats.revenue = revenue;
+    globalStats.orders = orders.length;
 
     const lowStockList = document.getElementById('lowStockList');
-    if (lowStockRes.data && lowStockRes.data.length > 0) { lowStockList.innerHTML = ''; lowStockRes.data.forEach(p => { lowStockList.innerHTML += `<div class="alert-card"><p>${p.name}</p><span>Only ${p.stock} left</span></div>`; }); } else { lowStockList.innerHTML = '<p style="font-size: 14px; color: #666;">All products are well stocked.</p>'; }
+    if (lowStockRes.data && lowStockRes.data.length > 0) { globalStats.lowStock = lowStockRes.data.length; lowStockList.innerHTML = ''; lowStockRes.data.forEach(p => { lowStockList.innerHTML += `<div class="alert-card"><p>${p.name}</p><span>Only ${p.stock} left</span></div>`; }); } 
+    else { globalStats.lowStock = 0; lowStockList.innerHTML = '<p style="font-size: 14px; color: #666;">All products are well stocked.</p>'; }
 
     const recentOrdersList = document.getElementById('recentOrdersList');
-    if (recentOrdersRes.data && recentOrdersRes.data.length > 0) { recentOrdersList.innerHTML = ''; recentOrdersRes.data.forEach(o => { recentOrdersList.innerHTML += `<div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px;"><span style="font-weight: 600;">#${o.id} - ${o.customer_name}</span><span style="color: #C59B5F; font-weight: 800;">Rs. ${o.total_amount}</span></div>`; }); } else { recentOrdersList.innerHTML = '<p style="font-size: 14px; color: #666;">No orders yet.</p>'; }
+    if (recentOrdersRes.data && recentOrdersRes.data.length > 0) { recentOrdersList.innerHTML = ''; recentOrdersRes.data.forEach(o => { recentOrdersList.innerHTML += `<div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px;"><span style="font-weight: 600;">#${o.id} - ${o.customer_name}</span><span style="color: #C59B5F; font-weight: 800;">Rs. ${o.total_amount}</span></div>`; }); } 
+    else { recentOrdersList.innerHTML = '<p style="font-size: 14px; color: #666;">No orders yet.</p>'; }
 
     const topSellingList = document.getElementById('topSellingList');
     if (orderItemsRes.data && orderItemsRes.data.length > 0) {
@@ -74,6 +82,13 @@ async function checkAuth() {
     document.getElementById('loadingText').style.display = 'none'; document.getElementById('statsGrid').style.display = 'grid';
   } catch (err) { document.getElementById('loadingText').textContent = 'Failed to load data.'; }
 }
+
+window.sendWhatsAppSummary = function() {
+  const today = new Date().toLocaleDateString();
+  const text = `Hello Admin! Here is your store summary for ${today}:\n\n📦 Total Orders: ${globalStats.orders}\n💰 Total Revenue: Rs. ${globalStats.revenue}\n👥 Customers: ${globalStats.customers}\n⚠️ Low Stock Items: ${globalStats.lowStock}\n\nKeep up the good work!`;
+  window.open(`https://wa.me/9779851169457?text=${encodeURIComponent(text)}`, '_blank');
+}
+
 checkAuth();
 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
 </script>

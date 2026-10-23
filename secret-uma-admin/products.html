@@ -5,14 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Products - Uma's Fashion Wear</title>
 <link rel="stylesheet" href="../shared/style.css">
-<style>.search-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 15px; outline: none; }</style>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>.search-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 15px; outline: none; } .csv-btn { background: #2196F3; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }</style>
 </head>
 <body>
 <div class="dashboard">
   <header><h1>Uma's Fashion Wear - Admin</h1><button id="logoutBtn">Logout</button></header>
-  <nav>
-    <a href="dashboard.html">Dashboard</a><a href="products.html" class="active">Products</a><a href="categories.html">Categories</a><a href="orders.html">Orders</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a>
-  </nav>
+  <nav><a href="dashboard.html">Dashboard</a><a href="products.html" class="active">Products</a><a href="categories.html">Categories</a><a href="orders.html">Orders</a><a href="customers.html">Customers</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a></nav>
   <main>
     <h2 id="formTitle">Add New Product</h2>
     <form id="productForm" class="product-form">
@@ -31,6 +30,11 @@
       <button type="button" id="cancelBtn" style="display: none; background: #666;" onclick="cancelEdit()">Cancel Edit</button>
     </form>
 
+    <h2 style="margin-top: 30px;">Bulk Upload (CSV)</h2>
+    <p style="font-size:14px; color:#666; margin-bottom:10px;">CSV Format: name, price, mrp, stock, category_id, sizes, colors, description, image_url</p>
+    <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 10px;">
+    <button class="csv-btn" onclick="uploadCSV()">Upload CSV</button>
+
     <h2 style="margin-top: 30px;">All Products</h2>
     <input type="text" id="searchProduct" class="search-box" placeholder="Search products by name..." oninput="filterAdminProducts()">
     <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading products...</p>
@@ -43,11 +47,11 @@
 supabaseClient.auth.getSession().then(({ data: { session } }) => { if (!session || session.user.email !== 'donnhero6@gmail.com') window.location.href = 'index.html'; });
 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
 
-let currentImages = []; let allProductsData = [];
+let currentImages = []; let allProductsData = []; let categoriesList = [];
 
 async function loadCategories() {
   const { data } = await supabaseClient.from('categories').select('*'); const select = document.getElementById('pCategory'); select.innerHTML = '<option value="">Select Category</option>';
-  if (data) data.forEach(cat => { select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`; });
+  if (data) { categoriesList = data; data.forEach(cat => { select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`; }); }
 }
 
 window.cancelEdit = function() { document.getElementById('productForm').reset(); document.getElementById('pId').value = ''; document.getElementById('formTitle').textContent = 'Add New Product'; document.getElementById('cancelBtn').style.display = 'none'; currentImages = []; }
@@ -57,10 +61,8 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   const id = document.getElementById('pId').value; const name = document.getElementById('pName').value; const price = document.getElementById('pPrice').value;
   const mrp = document.getElementById('pMrp').value || null; const tag = document.getElementById('pTag').value || null;
   const category_id = document.getElementById('pCategory').value; 
-  
   const sizesArray = document.getElementById('pSizes').value.split(',').map(s => s.trim()).filter(s => s);
   const colorsArray = document.getElementById('pColors').value.split(',').map(c => c.trim()).filter(c => c);
-  
   const stock = document.getElementById('pStock').value; const description = document.getElementById('pDesc').value; const files = document.getElementById('pFiles').files;
   
   let uploadedUrls = currentImages;
@@ -83,6 +85,40 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   saveBtn.textContent = 'Save Product'; saveBtn.disabled = false;
 });
 
+window.uploadCSV = function() {
+  const fileInput = document.getElementById('csvFile');
+  if (fileInput.files.length === 0) { alert('Please select a CSV file.'); return; }
+  const file = fileInput.files[0];
+  
+  Papa.parse(file, {
+    header: true, skipEmptyLines: true,
+    complete: async function(results) {
+      const rows = results.data;
+      if (rows.length === 0) { alert('CSV is empty.'); return; }
+      let successCount = 0;
+      
+      for (const row of rows) {
+        let catId = row.category_id;
+        if (row.category_name) {
+            const foundCat = categoriesList.find(c => c.name.toLowerCase() === row.category_name.toLowerCase());
+            if (foundCat) catId = foundCat.id;
+        }
+        const sizesArr = row.sizes ? row.sizes.split(',').map(s=>s.trim()) : ['Free Size'];
+        const colorsArr = row.colors ? row.colors.split(',').map(c=>c.trim()) : [];
+        
+        const { error } = await supabaseClient.from('products').insert([{
+          name: row.name, price: parseFloat(row.price), mrp: row.mrp ? parseFloat(row.mrp) : null,
+          stock: parseInt(row.stock), category_id: catId, sizes: sizesArr, colors: colorsArr,
+          description: row.description || '', images: row.image_url ? [row.image_url] : []
+        }]);
+        if (!error) successCount++;
+      }
+      alert(`${successCount} products uploaded successfully!`);
+      loadProducts();
+    }
+  });
+}
+
 async function loadProducts() {
   const { data } = await supabaseClient.from('products').select('*, categories(name)').order('created_at', { ascending: false });
   allProductsData = data || []; filterAdminProducts();
@@ -98,11 +134,7 @@ window.filterAdminProducts = function() {
     list.innerHTML += `
       <div class="product-item">
         <img src="${img}" loading="lazy" alt="${p.name}">
-        <div style="flex: 1;">
-            <h3>${p.name} ${p.tag ? `<span style="background:#C59B5F; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">${p.tag}</span>` : ''}</h3>
-            <p>Rs. ${p.price} ${mrpText} | Stock: ${p.stock} | ${catName}</p>
-            <p style="font-size:12px; color:#888;">Images: ${p.images ? p.images.length : 0} | Colors: ${p.colors ? p.colors.join(', ') : 'None'}</p>
-        </div>
+        <div style="flex: 1;"><h3>${p.name} ${p.tag ? `<span style="background:#C59B5F; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">${p.tag}</span>` : ''}</h3><p>Rs. ${p.price} ${mrpText} | Stock: ${p.stock} | ${catName}</p></div>
         <button onclick='editProduct(${JSON.stringify(p)})' style="background: #E8F0EC; color: #1C3B2D; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Edit</button>
         <button onclick="deleteProduct(${p.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
       </div>`;
@@ -112,8 +144,7 @@ window.filterAdminProducts = function() {
 window.editProduct = function(p) {
   document.getElementById('pId').value = p.id; document.getElementById('pName').value = p.name; document.getElementById('pPrice').value = p.price;
   document.getElementById('pMrp').value = p.mrp || ''; document.getElementById('pTag').value = p.tag || ''; document.getElementById('pCategory').value = p.category_id;
-  document.getElementById('pSizes').value = p.sizes ? p.sizes.join(', ') : '';
-  document.getElementById('pColors').value = p.colors ? p.colors.join(', ') : '';
+  document.getElementById('pSizes').value = p.sizes ? p.sizes.join(', ') : ''; document.getElementById('pColors').value = p.colors ? p.colors.join(', ') : '';
   document.getElementById('pStock').value = p.stock; document.getElementById('pDesc').value = p.description || '';
   currentImages = p.images || []; document.getElementById('formTitle').textContent = 'Edit Product'; document.getElementById('saveBtn').textContent = 'Update Product';
   document.getElementById('cancelBtn').style.display = 'block'; window.scrollTo(0, 0);

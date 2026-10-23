@@ -25,13 +25,42 @@
 </div>
 
 <div class="container">
-  <div class="category-filters" id="categoryFilters">
-    <button class="filter-btn active" onclick="setCategory('all', this)">All</button>
+  <div class="filter-row">
+    <div class="category-filters" id="categoryFilters">
+      <button class="filter-btn active" onclick="setCategory('all', this)">All</button>
+    </div>
+    <button class="filter-icon-btn" onclick="openFilterSheet()">⚙️</button>
   </div>
 
   <h2 class="section-title">Trending Products</h2>
   <div id="storeProducts" class="product-grid"></div>
-  <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreProducts()" style="display: none; width: 100%; padding: 15px; background: var(--card-bg); color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px;">Load More Products</button>
+  <button id="loadMoreBtn" onclick="loadMoreProducts()" style="display: none; width: 100%; padding: 15px; background: var(--card-bg); color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px;">Load More Products</button>
+</div>
+
+<div id="filterSheet" class="bottom-sheet">
+  <div class="sheet-header">
+    <h2>Filters</h2>
+    <button class="sheet-close" onclick="closeFilterSheet()">×</button>
+  </div>
+  <div class="filter-group">
+    <h3>Price Range (Rs.)</h3>
+    <div class="price-inputs">
+      <input type="number" id="minPrice" placeholder="Min">
+      <span>-</span>
+      <input type="number" id="maxPrice" placeholder="Max">
+    </div>
+  </div>
+  <button class="apply-filter-btn" onclick="applyFilters()">Apply Filters</button>
+</div>
+
+<div id="abandonedCartModal" class="modal-overlay">
+  <div class="modal-content" style="text-align: center;">
+    <button class="close-modal" onclick="closeAbandonedModal()">×</button>
+    <div style="font-size: 50px; margin-bottom: 15px;">🛒</div>
+    <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 10px;">Wait! Don't leave yet.</h2>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">You have items in your cart. Use code <strong>UMA10</strong> for 10% OFF!</p>
+    <a href="cart" style="display: block; width: 100%; padding: 15px; background: var(--primary); color: var(--primary-text); text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px;">Go to Cart</a>
+  </div>
 </div>
 
 <a href="https://wa.me/9779851169457" class="whatsapp-float" target="_blank">
@@ -52,6 +81,19 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('dark-mode');
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('uma_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); }
 
+function openFilterSheet() { document.getElementById('filterSheet').classList.add('active'); }
+function closeFilterSheet() { document.getElementById('filterSheet').classList.remove('active'); }
+function closeAbandonedModal() { document.getElementById('abandonedCartModal').classList.remove('active'); localStorage.setItem('uma_abandoned_shown', 'true'); }
+
+let allProducts = []; let displayedProducts = 10; let currentCategory = 'all'; let currentSearch = ''; let minPrice = 0; let maxPrice = 999999; let wishlist = JSON.parse(localStorage.getItem('uma_wishlist')) || []; let currentSlide = 0;
+
+setTimeout(() => {
+  const cart = JSON.parse(localStorage.getItem('uma_cart')) || [];
+  if (cart.length > 0 && !localStorage.getItem('uma_abandoned_shown')) {
+    document.getElementById('abandonedCartModal').classList.add('active');
+  }
+}, 8000);
+
 async function loadSettings() {
   const { data } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
   if (data) {
@@ -59,8 +101,6 @@ async function loadSettings() {
     if (data.announcement_text) { document.getElementById('announcementBar').textContent = data.announcement_text; } else { document.getElementById('announcementBar').style.display = 'none'; }
   }
 }
-
-let allProducts = []; let displayedProducts = 10; let currentCategory = 'all'; let currentSearch = ''; let wishlist = JSON.parse(localStorage.getItem('uma_wishlist')) || []; let currentSlide = 0;
 
 async function loadBanners() {
   const { data } = await supabaseClient.from('banners').select('*').eq('is_active', true);
@@ -85,7 +125,7 @@ function updateCartCount() {
 }
 
 async function loadStoreProducts() {
-  const { data, error } = await supabaseClient.from('products').select('*, categories(name)').eq('is_active', true);
+  const { data, error } = await supabaseClient.from('products').select('*, categories(name)').eq('is_active', true).gt('stock', 0);
   if (!error && data) { allProducts = data; filterProducts(); }
 }
 
@@ -94,35 +134,31 @@ function filterProducts() {
   let filtered = allProducts;
   if (currentCategory !== 'all') filtered = filtered.filter(p => p.categories && p.categories.name === currentCategory);
   if (currentSearch) filtered = filtered.filter(p => p.name.toLowerCase().includes(currentSearch));
+  filtered = filtered.filter(p => p.price >= minPrice && p.price <= maxPrice);
   filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   displayedProducts = 10; renderProducts(filtered);
 }
 
+window.applyFilters = function() {
+  minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+  maxPrice = parseFloat(document.getElementById('maxPrice').value) || 999999;
+  closeFilterSheet(); filterProducts();
+}
+
 function renderProducts(list) {
-  const grid = document.getElementById('storeProducts');
-  const loadMoreBtn = document.getElementById('loadMoreBtn');
-  grid.innerHTML = '';
+  const grid = document.getElementById('storeProducts'); const loadMoreBtn = document.getElementById('loadMoreBtn'); grid.innerHTML = '';
   if (list.length === 0) { grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No products found.</p>'; loadMoreBtn.style.display = 'none'; return; }
   const toDisplay = list.slice(0, displayedProducts);
   toDisplay.forEach(p => {
-    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200';
-    const isWishlisted = wishlist.includes(p.id);
-    const isOutOfStock = p.stock <= 0;
+    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200'; const isWishlisted = wishlist.includes(p.id);
     let discountHtml = '', mrpHtml = '', tagHtml = '';
     if (p.mrp && p.mrp > p.price) { const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100); discountHtml = `<span class="discount-tag">${discountPercent}% OFF</span>`; mrpHtml = `<span class="mrp">Rs. ${p.mrp}</span>`; }
     if (p.tag) { tagHtml = `<span class="custom-tag">${p.tag}</span>`; }
-    let outOfStockHtml = isOutOfStock ? `<div style="position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); display:flex; align-items:center; justify-content:center; z-index:5;"><span style="background:#1A1A1A; color:white; padding:8px 16px; font-weight:bold; font-size:12px; border-radius:4px;">OUT OF STOCK</span></div>` : '';
-
     grid.innerHTML += `
       <div class="product-card">
-        ${discountHtml} ${tagHtml} ${outOfStockHtml}
-        <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(event, ${p.id}, this)">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-        </button>
-        <a href="product?id=${p.id}" style="text-decoration: none; color: inherit;">
-          <img src="${imageUrl}" id="img_${p.id}" alt="${p.name}">
-          <div class="product-info"><h3>${p.name}</h3><div class="price-row"><p class="price">Rs. ${p.price}</p>${mrpHtml}</div></div>
-        </a>
+        ${discountHtml} ${tagHtml}
+        <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(event, ${p.id}, this)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
+        <a href="product?id=${p.id}" style="text-decoration: none; color: inherit;"><img src="${imageUrl}" id="img_${p.id}" alt="${p.name}"><div class="product-info"><h3>${p.name}</h3><div class="price-row"><p class="price">Rs. ${p.price}</p>${mrpHtml}</div></div></a>
       </div>`;
   });
   if (displayedProducts >= list.length) loadMoreBtn.style.display = 'none'; else loadMoreBtn.style.display = 'block';

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customers - Uma's Fashion Wear</title>
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+.customer-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #2196F3; }
+.customer-info h3 { font-size: 16px; color: #1A1A1A; margin-bottom: 5px; }
+.customer-info p { font-size: 14px; color: #666; }
+.wa-btn { background: #25d366; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; text-decoration: none; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <header><h1>Uma's Fashion Wear - Admin</h1><button id="logoutBtn">Logout</button></header>
+  <nav><a href="dashboard.html">Dashboard</a><a href="products.html">Products</a><a href="categories.html">Categories</a><a href="orders.html">Orders</a><a href="customers.html" class="active">Customers</a><a href="customers.html">Customers</a><a href="banners.html">Slider</a><a href="coupons.html">Coupons</a><a href="settings.html">Settings</a></nav>
+  <main>
+    <h2>Customer Database (CRM)</h2>
+    <input type="text" id="searchCustomer" placeholder="Search by name or phone..." oninput="filterCustomers()" style="width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 15px; outline: none;">
+    
+    <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading customers...</p>
+    <div id="customerList"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase.js"></script>
+<script>
+supabaseClient.auth.getSession().then(({ data: { session } }) => { if (!session || session.user.email !== 'donnhero6@gmail.com') window.location.href = 'index.html'; });
+document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
+
+let uniqueCustomers = [];
+
+async function loadCustomers() {
+  const { data: orders, error } = await supabaseClient.from('orders').select('customer_name, phone, total_amount, status');
+  const loading = document.getElementById('loadingText'); loading.style.display = 'none';
+  
+  if (error || !orders) { loading.textContent = 'Error loading customers.'; return; }
+
+  const customerMap = {};
+  orders.forEach(o => {
+    if (!customerMap[o.phone]) {
+      customerMap[o.phone] = { name: o.customer_name, phone: o.phone, orders: 0, totalSpent: 0 };
+    }
+    if (o.status !== 'Cancelled') {
+      customerMap[o.phone].orders += 1;
+      customerMap[o.phone].totalSpent += Number(o.total_amount);
+    }
+  });
+
+  uniqueCustomers = Object.values(customerMap).sort((a, b) => b.totalSpent - a.totalSpent);
+  filterCustomers();
+}
+
+window.filterCustomers = function() {
+  const query = document.getElementById('searchCustomer').value.toLowerCase();
+  const list = document.getElementById('customerList');
+  list.innerHTML = '';
+
+  const filtered = uniqueCustomers.filter(c => c.name.toLowerCase().includes(query) || c.phone.includes(query));
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="color: #666;">No customers found.</p>';
+    return;
+  }
+
+  filtered.forEach(c => {
+    const waText = encodeURIComponent(`Hello ${c.name}, thank you for shopping with Uma's Fashion Wear! We have new arrivals. Check them out: https://uma-fashion.pages.dev`);
+    list.innerHTML += `
+      <div class="customer-card">
+        <div class="customer-info">
+          <h3>${c.name}</h3>
+          <p>📞 ${c.phone}</p>
+          <p style="margin-top: 5px; font-weight: 600; color: #10B981;">Orders: ${c.orders} | Spent: Rs. ${c.totalSpent}</p>
+        </div>
+        <a href="https://wa.me/977${c.phone}?text=${waText}" class="wa-btn" target="_blank">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 448 512" fill="white"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+          Message
+        </a>
+      </div>
+    `;
+  });
+}
+
+loadCustomers();
+</script>
+</body>
+</html>
