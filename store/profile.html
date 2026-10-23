@@ -7,6 +7,12 @@
 <title>My Account - Uma's Fashion Wear</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="/store/style.css">
+<style>
+.rewards-card { background: linear-gradient(135deg, #1C3B2D 0%, #2a5844 100%); color: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 20px rgba(28,59,45,0.3); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+.rewards-info h3 { font-size: 14px; font-weight: 600; opacity: 0.8; margin-bottom: 5px; }
+.rewards-info p { font-size: 32px; font-weight: 800; margin: 0; }
+.rewards-icon { font-size: 50px; }
+</style>
 </head>
 <body>
 <header><h1 style="font-size: 20px; margin: 0; flex: 1; text-align: center; font-weight: 800;">My Account</h1></header>
@@ -40,12 +46,15 @@
       </form>
     </div>
   </div>
+  
   <div id="userSection" style="display: none;">
     <div class="profile-card" style="display: flex; justify-content: space-between; align-items: center;">
       <div><p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Logged in as</p><strong id="userEmailDisplay" style="font-size: 16px; color: var(--text-main);">user@email.com</strong></div>
       <button class="logout-profile-btn" onclick="logoutCustomer()">Logout</button>
     </div>
+    <div id="rewardsContainer"></div>
   </div>
+  
   <div id="ordersContainer"></div>
 </div>
 
@@ -79,7 +88,7 @@ async function checkUser() {
     document.getElementById('authSection').style.display = 'none'; document.getElementById('userSection').style.display = 'block'; document.getElementById('userEmailDisplay').textContent = currentUser.email;
     fetchUserOrders(currentUser.email);
   } else {
-    document.getElementById('authSection').style.display = 'block'; document.getElementById('userSection').style.display = 'none'; document.getElementById('ordersContainer').innerHTML = '';
+    document.getElementById('authSection').style.display = 'block'; document.getElementById('userSection').style.display = 'none'; document.getElementById('ordersContainer').innerHTML = ''; document.getElementById('rewardsContainer').innerHTML = '';
     const lastPhone = localStorage.getItem('uma_last_phone');
     if (lastPhone) { document.getElementById('trackPhone').value = lastPhone; fetchOrdersByPhone(lastPhone); }
   }
@@ -104,6 +113,17 @@ async function fetchUserOrders(email) {
   document.getElementById('ordersContainer').innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading...</p>';
   const { data } = await supabaseClient.from('orders').select('*, order_items(*)').eq('customer_email', email).order('created_at', { ascending: false });
   if (!data || data.length === 0) { document.getElementById('ordersContainer').innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 20px;">No orders found.</p>'; return; }
+  
+  let totalPoints = 0;
+  data.forEach(o => { if (o.status !== 'Cancelled' && o.points_earned) totalPoints += o.points_earned; });
+  
+  document.getElementById('rewardsContainer').innerHTML = `
+    <div class="rewards-card">
+      <div class="rewards-info"><h3>Loyalty Points</h3><p>${totalPoints}</p></div>
+      <div class="rewards-icon">🏆</div>
+    </div>
+  `;
+
   renderOrders(data, email);
 }
 

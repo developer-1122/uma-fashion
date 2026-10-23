@@ -12,7 +12,10 @@
 <div class="announcement-bar" id="announcementBar">Free Delivery inside Kathmandu Valley!</div>
 <header>
   <a href="/store/" style="text-decoration: none;"><h1 id="storeName">Uma's</h1></a>
-  <input type="text" id="searchInput" class="search-bar" placeholder="Search..." oninput="filterProducts()">
+  <div class="search-container">
+    <input type="text" id="searchInput" class="search-bar" placeholder="Search..." oninput="handleSearch()" autocomplete="off">
+    <div id="searchDropdown" class="search-dropdown"></div>
+  </div>
   <button onclick="toggleDarkMode()" style="background: none; border: none; font-size: 20px; cursor: pointer; margin-right: 10px;">🌓</button>
   <a href="cart" class="cart-icon" id="headerCartIcon">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
@@ -35,6 +38,21 @@
   <h2 class="section-title">Trending Products</h2>
   <div id="storeProducts" class="product-grid"></div>
   <button id="loadMoreBtn" onclick="loadMoreProducts()" style="display: none; width: 100%; padding: 15px; background: var(--card-bg); color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px;">Load More Products</button>
+</div>
+
+<div class="footer">
+  <h2>Uma's Fashion Wear</h2>
+  <p>Kathmandu, Nepal | 9851169457</p>
+  <div class="newsletter-box">
+    <input type="email" id="subEmail" placeholder="Enter your email for offers">
+    <button onclick="subscribeNewsletter()">Subscribe</button>
+  </div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Contact Us</a>
+  </div>
+  <p style="font-size: 12px; margin-top: 20px;">© 2026 Uma's Fashion Wear. All rights reserved.</p>
 </div>
 
 <div id="filterSheet" class="bottom-sheet">
@@ -94,6 +112,19 @@ setTimeout(() => {
   }
 }, 8000);
 
+async function subscribeNewsletter() {
+  const email = document.getElementById('subEmail').value;
+  if (!email) { alert('Please enter an email.'); return; }
+  const { error } = await supabaseClient.from('subscribers').insert([{ email }]);
+  if (error) {
+    if (error.code === '23505') alert('You are already subscribed!');
+    else alert('Error subscribing.');
+  } else {
+    alert('Thank you for subscribing!');
+    document.getElementById('subEmail').value = '';
+  }
+}
+
 async function loadSettings() {
   const { data } = await supabaseClient.from('settings').select('*').eq('id', 1).single();
   if (data) {
@@ -129,8 +160,44 @@ async function loadStoreProducts() {
   if (!error && data) { allProducts = data; filterProducts(); }
 }
 
-function filterProducts() {
+window.handleSearch = function() {
   currentSearch = document.getElementById('searchInput').value.toLowerCase();
+  const dropdown = document.getElementById('searchDropdown');
+  
+  if (currentSearch.length > 0) {
+    const matches = allProducts.filter(p => p.name.toLowerCase().includes(currentSearch)).slice(0, 5);
+    if (matches.length > 0) {
+      dropdown.innerHTML = '';
+      matches.forEach(p => {
+        const img = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200';
+        dropdown.innerHTML += `
+          <a href="product?id=${p.id}" class="search-item">
+            <img src="${img}" alt="${p.name}">
+            <div class="search-item-info">
+              <h4>${p.name}</h4>
+              <p>Rs. ${parseFloat(p.price).toLocaleString('en-IN')}</p>
+            </div>
+          </a>
+        `;
+      });
+      dropdown.classList.add('active');
+    } else {
+      dropdown.classList.remove('active');
+    }
+  } else {
+    dropdown.classList.remove('active');
+  }
+  filterProducts();
+}
+
+document.addEventListener('click', function(event) {
+  const searchContainer = document.querySelector('.search-container');
+  if (!searchContainer.contains(event.target)) {
+    document.getElementById('searchDropdown').classList.remove('active');
+  }
+});
+
+function filterProducts() {
   let filtered = allProducts;
   if (currentCategory !== 'all') filtered = filtered.filter(p => p.categories && p.categories.name === currentCategory);
   if (currentSearch) filtered = filtered.filter(p => p.name.toLowerCase().includes(currentSearch));
@@ -152,13 +219,13 @@ function renderProducts(list) {
   toDisplay.forEach(p => {
     const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200'; const isWishlisted = wishlist.includes(p.id);
     let discountHtml = '', mrpHtml = '', tagHtml = '';
-    if (p.mrp && p.mrp > p.price) { const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100); discountHtml = `<span class="discount-tag">${discountPercent}% OFF</span>`; mrpHtml = `<span class="mrp">Rs. ${p.mrp}</span>`; }
+    if (p.mrp && p.mrp > p.price) { const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100); discountHtml = `<span class="discount-tag">${discountPercent}% OFF</span>`; mrpHtml = `<span class="mrp">Rs. ${parseFloat(p.mrp).toLocaleString('en-IN')}</span>`; }
     if (p.tag) { tagHtml = `<span class="custom-tag">${p.tag}</span>`; }
     grid.innerHTML += `
       <div class="product-card">
         ${discountHtml} ${tagHtml}
         <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(event, ${p.id}, this)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
-        <a href="product?id=${p.id}" style="text-decoration: none; color: inherit;"><img src="${imageUrl}" id="img_${p.id}" alt="${p.name}"><div class="product-info"><h3>${p.name}</h3><div class="price-row"><p class="price">Rs. ${p.price}</p>${mrpHtml}</div></div></a>
+        <a href="product?id=${p.id}" style="text-decoration: none; color: inherit;"><img src="${imageUrl}" id="img_${p.id}" alt="${p.name}"><div class="product-info"><h3>${p.name}</h3><div class="price-row"><p class="price">Rs. ${parseFloat(p.price).toLocaleString('en-IN')}</p>${mrpHtml}</div></div></a>
       </div>`;
   });
   if (displayedProducts >= list.length) loadMoreBtn.style.display = 'none'; else loadMoreBtn.style.display = 'block';

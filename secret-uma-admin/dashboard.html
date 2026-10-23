@@ -23,6 +23,7 @@
       <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-info"><h3>Products</h3><p id="productCount">0</p></div></div>
       <div class="stat-card" style="border-left-color: #C59B5F;"><div class="stat-icon" style="background: #FDF9F1;">📦</div><div class="stat-info"><h3>Orders</h3><p id="orderCount">0</p></div></div>
       <div class="stat-card" style="border-left-color: #2196F3;"><div class="stat-icon" style="background: #E3F2FD;">👥</div><div class="stat-info"><h3>Customers</h3><p id="customerCount">0</p></div></div>
+      <div class="stat-card" style="border-left-color: #9C27B0;"><div class="stat-icon" style="background: #F3E5F5;">📊</div><div class="stat-info"><h3>Avg Order Value</h3><p id="aovCount">Rs. 0</p></div></div>
       <div class="stat-card" style="border-left-color: #1C3B2D;"><div class="stat-icon" style="background: #E8F0EC;">💰</div><div class="stat-info"><h3>Revenue</h3><p id="totalRevenue">Rs. 0</p></div></div>
     </div>
     <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-top: 30px; display: none;" id="chartContainer"><h3 style="font-size: 16px; color: #1A1A1A; margin-bottom: 15px; font-weight: 800;">📈 Sales Last 7 Days</h3><canvas id="salesChart"></canvas></div>
@@ -55,11 +56,21 @@ async function checkAuth() {
     const uniquePhones = new Set(orders.map(o => o.phone)); document.getElementById('customerCount').textContent = uniquePhones.size;
     globalStats.customers = uniquePhones.size;
 
-    let revenue = 0; let last7Days = {};
+    let revenue = 0; let completedOrders = 0; let last7Days = {};
     for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); last7Days[d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })] = 0; }
-    orders.forEach(o => { if (o.status !== 'Cancelled') { revenue += Number(o.total_amount); const dStr = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); if (last7Days[dStr] !== undefined) last7Days[dStr] += Number(o.total_amount); } });
+    orders.forEach(o => { 
+      if (o.status !== 'Cancelled') { 
+        revenue += Number(o.total_amount); 
+        completedOrders++;
+        const dStr = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); 
+        if (last7Days[dStr] !== undefined) last7Days[dStr] += Number(o.total_amount); 
+      } 
+    });
+    
     document.getElementById('totalRevenue').textContent = `Rs. ${revenue}`; globalStats.revenue = revenue;
     globalStats.orders = orders.length;
+    const aov = completedOrders > 0 ? Math.round(revenue / completedOrders) : 0;
+    document.getElementById('aovCount').textContent = `Rs. ${aov}`;
 
     const lowStockList = document.getElementById('lowStockList');
     if (lowStockRes.data && lowStockRes.data.length > 0) { globalStats.lowStock = lowStockRes.data.length; lowStockList.innerHTML = ''; lowStockRes.data.forEach(p => { lowStockList.innerHTML += `<div class="alert-card"><p>${p.name}</p><span>Only ${p.stock} left</span></div>`; }); } 

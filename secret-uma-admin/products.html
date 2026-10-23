@@ -130,15 +130,33 @@ window.filterAdminProducts = function() {
   const filtered = allProductsData.filter(p => p.name.toLowerCase().includes(query));
   if (filtered.length === 0) { list.innerHTML = '<p style="color: #666;">No products found.</p>'; return; }
   filtered.forEach(p => {
-    const img = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200'; const catName = p.categories ? p.categories.name : 'No Category'; const mrpText = p.mrp ? `<strike>Rs. ${p.mrp}</strike>` : '';
+    const img = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200'; const catName = p.categories ? p.categories.name : 'No Category'; const mrpText = p.mrp ? `<strike>Rs. ${parseFloat(p.mrp).toLocaleString('en-IN')}</strike>` : '';
     list.innerHTML += `
       <div class="product-item">
         <img src="${img}" loading="lazy" alt="${p.name}">
-        <div style="flex: 1;"><h3>${p.name} ${p.tag ? `<span style="background:#C59B5F; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">${p.tag}</span>` : ''}</h3><p>Rs. ${p.price} ${mrpText} | Stock: ${p.stock} | ${catName}</p></div>
+        <div style="flex: 1;">
+            <h3>${p.name} ${p.tag ? `<span style="background:#C59B5F; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">${p.tag}</span>` : ''}</h3>
+            <p>Rs. ${parseFloat(p.price).toLocaleString('en-IN')} ${mrpText} | Stock: ${p.stock} | ${catName}</p>
+        </div>
+        <button onclick="cloneProduct(${p.id})" style="background: #FFF8E1; color: #B45309; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Clone</button>
         <button onclick='editProduct(${JSON.stringify(p)})' style="background: #E8F0EC; color: #1C3B2D; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Edit</button>
         <button onclick="deleteProduct(${p.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
       </div>`;
   });
+}
+
+window.cloneProduct = async function(id) {
+  const p = allProductsData.find(item => item.id === id);
+  if (!p) return;
+  
+  const cloneData = {
+    name: p.name + ' (Copy)', price: p.price, mrp: p.mrp, tag: p.tag, category_id: p.category_id,
+    stock: p.stock, description: p.description, sizes: p.sizes, colors: p.colors, images: p.images
+  };
+  
+  const { error } = await supabaseClient.from('products').insert([cloneData]);
+  if (error) alert('Error cloning: ' + error.message);
+  else { alert('Product cloned successfully!'); loadProducts(); }
 }
 
 window.editProduct = function(p) {
