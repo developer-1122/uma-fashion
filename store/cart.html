@@ -6,7 +6,8 @@
 <meta name="theme-color" content="#FFFFFF">
 <title>Cart - Uma's Fashion Wear</title>
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="/store/style.css">
+<!-- Added ?v=2 to force browsers to load the latest CSS -->
+<link rel="stylesheet" href="/store/style.css?v=2">
 </head>
 <body>
 <header>
@@ -21,75 +22,82 @@
 
 <div class="container" style="margin-top: 20px;">
   
-  <div class="progress-bar-container" id="checkoutProgress">
-    <div class="progress-step active">
-      <div class="progress-dot">1</div>
-      <span>Cart</span>
-    </div>
-    <div class="progress-step active">
-      <div class="progress-dot">2</div>
-      <span>Address</span>
-    </div>
-    <div class="progress-step">
-      <div class="progress-dot">3</div>
-      <span>Payment</span>
-    </div>
-  </div>
-
   <div id="cartItems" class="cart-container"></div>
 
-  <div class="checkout-box" id="checkoutBox" style="display: none;">
+  <div id="checkoutBox" style="display: none;">
     
-    <div id="authPrompt" style="display: none; text-align: center; margin-bottom: 20px;">
-      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">Already have an account?</p>
-      <a href="/store/profile" style="display: inline-block; padding: 10px 20px; background: var(--bg-subtle); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 14px;">Login for faster checkout</a>
+    <div class="bill-details">
+      <h3>Order Details</h3>
+      <div class="bill-row"><span>Subtotal</span><span id="billSubtotal">Rs. 0</span></div>
+      <div class="bill-row discount" id="billDiscountRow" style="display: none;"><span>Discount</span><span id="billDiscount">- Rs. 0</span></div>
+      <div class="bill-row shipping"><span>Shipping Fee</span><span id="billShipping">Rs. 0</span></div>
+      <div class="bill-row total"><span>Total</span><span id="billTotal">Rs. 0</span></div>
     </div>
 
-    <h2 class="section-title" style="margin-bottom: 15px;">Delivery Details</h2>
-    <form id="checkoutForm">
-      <input type="text" id="cName" placeholder="Full Name" required>
-      <input type="tel" id="cPhone" placeholder="Phone Number (98XXXXXXXX)" pattern="[9][678][0-9]{8}" maxlength="10" required>
-      <select id="cDistrict" required>
-        <option value="">Select District</option>
-        <option value="Kathmandu">Kathmandu</option>
-        <option value="Lalitpur">Lalitpur</option>
-        <option value="Bhaktapur">Bhaktapur</option>
-        <option value="Kaski">Kaski</option>
-        <option value="Chitwan">Chitwan</option>
-        <option value="Other">Other District</option>
-      </select>
-      <textarea id="cAddress" placeholder="Full Delivery Address" required></textarea>
-      
-      <h2 class="section-title" style="margin: 25px 0 15px;">Available Coupons</h2>
-      <div class="available-coupons" id="couponList"></div>
-
-      <h2 class="section-title" style="margin: 25px 0 15px;">Payment Method</h2>
-      <div class="payment-options">
-        <label class="pay-option"><input type="radio" name="payment" value="Cash on Delivery" checked><span style="flex: 1;">Cash on Delivery</span></label>
-        <label class="pay-option"><input type="radio" name="payment" value="eSewa"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Esewa_Logo.svg/256px-Esewa_Logo.svg.png" alt="eSewa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #60bb46; font-weight: 800;">eSewa</span></label>
-        <label class="pay-option"><input type="radio" name="payment" value="Khalti"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Khalti_Logo.svg/256px-Khalti_Logo.svg.png" alt="Khalti" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #5c2d91; font-weight: 800;">Khalti</span></label>
-        <label class="pay-option"><input type="radio" name="payment" value="IME Pay"><span style="flex: 1; color: #d32f2f; font-weight: 800;">IME Pay</span></label>
+    <div class="checkout-section">
+      <h3>Voucher</h3>
+      <div class="voucher-box">
+        <input type="text" id="couponInput" placeholder="Enter Voucher Code">
+        <button onclick="applyCoupon()">Apply</button>
       </div>
+      <p id="couponMsg" style="font-size: 13px; font-weight: 600; margin-top: -5px;"></p>
+    </div>
 
-      <div id="discountRow" class="discount-row" style="display: none;"><span>Discount:</span><span id="discountAmount">- Rs. 0</span></div>
-      <div class="discount-row" style="color: var(--text-main);"><span>Delivery Charge:</span><span id="shippingAmount">Rs. 0</span></div>
-      <div class="total-row"><span>Total:</span><span id="cartTotal">Rs. 0</span></div>
-      
-      <button type="submit" class="place-order-btn" id="orderBtn">Place Order</button>
-    </form>
+    <div class="checkout-section">
+      <h3>Delivery Details</h3>
+      <form id="checkoutForm" class="checkout-box">
+        <input type="text" id="cName" placeholder="Full Name" required>
+        <input type="tel" id="cPhone" placeholder="Phone Number (98XXXXXXXX)" pattern="[9][678][0-9]{8}" maxlength="10" required>
+        <select id="cDistrict" required>
+          <option value="">Select District</option>
+          <option value="Kathmandu">Kathmandu</option>
+          <option value="Lalitpur">Lalitpur</option>
+          <option value="Bhaktapur">Bhaktapur</option>
+          <option value="Kaski">Kaski</option>
+          <option value="Chitwan">Chitwan</option>
+          <option value="Other">Other District</option>
+        </select>
+        <textarea id="cAddress" placeholder="Full Delivery Address" required></textarea>
+        
+        <h3 style="margin: 20px 0 15px;">Payment Method</h3>
+        <div class="payment-options">
+          <label class="pay-option"><input type="radio" name="payment" value="Cash on Delivery" checked onchange="toggleQR()"><span style="flex: 1;">Cash on Delivery</span></label>
+          <label class="pay-option"><input type="radio" name="payment" value="eSewa" onchange="toggleQR()"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Esewa_Logo.svg/256px-Esewa_Logo.svg.png" alt="eSewa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #60bb46; font-weight: 800;">eSewa</span></label>
+          <label class="pay-option"><input type="radio" name="payment" value="Khalti" onchange="toggleQR()"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Khalti_Logo.svg/256px-Khalti_Logo.svg.png" alt="Khalti" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #5c2d91; font-weight: 800;">Khalti</span></label>
+          <label class="pay-option"><input type="radio" name="payment" value="Fonepay QR" onchange="toggleQR()"><span style="flex: 1; font-weight: 700;">Pay via Fonepay QR</span></label>
+        </div>
+
+        <div id="qrSection" class="qr-container">
+          <p>Scan this QR with any Bank App or Fonepay</p>
+          <img src="/store/qr.png" alt="Fonepay QR Code">
+          <p style="margin-top: 10px;">After payment, enter the Transaction ID below:</p>
+          <input type="text" id="txnId" placeholder="Enter Transaction ID">
+        </div>
+
+        <button type="submit" id="formSubmitBtn" style="display: none;"></button>
+      </form>
+    </div>
   </div>
 </div>
+
+<div class="sticky-checkout-bar" id="stickyCheckoutBar">
+  <div class="sticky-checkout-inner">
+    <div class="sticky-total-text">
+      <span>Total</span>
+      <strong id="stickyTotal">Rs. 0</strong>
+    </div>
+    <button class="place-order-btn" onclick="document.getElementById('formSubmitBtn').click()">Place Order</button>
+  </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
 
 <div id="loadingOverlay" class="loading-overlay">
   <div class="spinner"></div>
   <p>Confirming your order...</p>
 </div>
 
-<a href="https://wa.me/9779851169457" class="whatsapp-float" target="_blank">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
-</a>
-
-<div class="bottom-nav">
+<div class="bottom-nav" style="z-index: 1002;">
   <a href="/store/" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a>
   <a href="/store/wishlist" class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Wishlist</span></a>
   <a href="/store/cart" class="nav-item active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span>Cart</span></a>
@@ -105,10 +113,16 @@ if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('d
 let cart = JSON.parse(localStorage.getItem('uma_cart')) || [];
 let appliedCoupon = null; let discountAmount = 0; let shippingFee = 0; let currentUser = null;
 
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  container.className = `toast-container toast-${type} show`;
+  container.innerHTML = (type === 'success' ? '✅ ' : '⚠️ ') + message;
+  setTimeout(() => { container.classList.remove('show'); }, 3000);
+}
+
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   if (session) {
     currentUser = session.user;
-    document.getElementById('authPrompt').style.display = 'none';
     const savedInfo = JSON.parse(localStorage.getItem('uma_user_info'));
     if (savedInfo) {
       document.getElementById('cName').value = savedInfo.name || '';
@@ -116,38 +130,35 @@ supabaseClient.auth.getSession().then(({ data: { session } }) => {
       document.getElementById('cDistrict').value = savedInfo.district || '';
       document.getElementById('cAddress').value = savedInfo.address || '';
     }
-  } else {
-    document.getElementById('authPrompt').style.display = 'block';
   }
 });
 
-async function loadAvailableCoupons() {
-  const { data } = await supabaseClient.from('coupons').select('*').eq('is_active', true);
-  const container = document.getElementById('couponList');
-  if (data && data.length > 0) {
-    data.forEach(c => { container.innerHTML += `<div class="coupon-chip" onclick="applyCoupon('${c.code}')" style="background: #FFF8E1; border: 1px dashed #F59E0B; color: #B45309; padding: 8px 15px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;">🎟️ ${c.code} - ${c.discount_percent}% OFF</div>`; });
-  } else {
-    container.innerHTML = '<p style="font-size: 13px; color: var(--text-muted);">No coupons available.</p>';
-  }
+function toggleQR() {
+  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+  const qrSection = document.getElementById('qrSection');
+  if (paymentMethod === 'Fonepay QR') { qrSection.style.display = 'block'; } 
+  else { qrSection.style.display = 'none'; }
+}
+
+function getDeliveryDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 3);
+  return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 function renderCart() {
   const itemsDiv = document.getElementById('cartItems');
   const checkoutBox = document.getElementById('checkoutBox');
-  const totalSpan = document.getElementById('cartTotal');
-  const discountRow = document.getElementById('discountRow');
-  const discountSpan = document.getElementById('discountAmount');
-  const shippingSpan = document.getElementById('shippingAmount');
-  const district = document.getElementById('cDistrict').value;
+  const stickyBar = document.getElementById('stickyCheckoutBar');
   
   itemsDiv.innerHTML = ''; let subtotal = 0;
 
   if (cart.length === 0) {
     itemsDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">Your cart is empty.</p>';
-    checkoutBox.style.display = 'none'; document.getElementById('checkoutProgress').style.display = 'none'; return;
+    checkoutBox.style.display = 'none'; stickyBar.style.display = 'none'; return;
   }
 
-  checkoutBox.style.display = 'block'; document.getElementById('checkoutProgress').style.display = 'flex';
+  checkoutBox.style.display = 'block'; stickyBar.style.display = 'block';
 
   cart.forEach((item, index) => {
     subtotal += item.price * item.quantity;
@@ -156,57 +167,94 @@ function renderCart() {
         <img src="${item.image}" alt="${item.name}">
         <div class="cart-details">
           <h3>${item.name}</h3>
-          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Size: ${item.size || 'Free'} | Color: ${item.color || 'Default'}</p>
+          <p class="variation">Size: ${item.size || 'Free'} | Color: ${item.color || 'Default'}</p>
           <p class="price">Rs. ${parseFloat(item.price).toLocaleString('en-IN')}</p>
+          <p class="delivery-date">🚚 Guaranteed by ${getDeliveryDate()}</p>
           <div class="qty-controls">
             <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-            <span style="font-weight: 700; font-size: 16px;">${item.quantity}</span>
+            <span style="font-weight: 700; font-size: 14px;">${item.quantity}</span>
             <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
-            <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
           </div>
         </div>
+        <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
       </div>`;
   });
 
+  const district = document.getElementById('cDistrict').value;
   const ktmValley = ['Kathmandu', 'Lalitpur', 'Bhaktapur'];
-  if (ktmValley.includes(district)) { shippingFee = 0; shippingSpan.textContent = 'Free'; shippingSpan.style.color = '#10B981'; } 
-  else if (district === "") { shippingFee = 0; shippingSpan.textContent = 'Select District'; shippingSpan.style.color = '#EF4444'; } 
-  else { shippingFee = 220; shippingSpan.textContent = 'Rs. 220'; shippingSpan.style.color = 'var(--text-main)'; }
+  
+  if (ktmValley.includes(district)) { shippingFee = 0; document.getElementById('billShipping').textContent = 'Free'; document.getElementById('billShipping').style.color = '#10B981'; } 
+  else if (district === "") { shippingFee = 0; document.getElementById('billShipping').textContent = 'Select District'; document.getElementById('billShipping').style.color = '#EF4444'; } 
+  else { shippingFee = 220; document.getElementById('billShipping').textContent = 'Rs. 220'; document.getElementById('billShipping').style.color = 'var(--text-main)'; }
 
-  if (appliedCoupon) { discountAmount = Math.round(subtotal * (appliedCoupon.discount_percent / 100)); discountRow.style.display = 'flex'; discountSpan.textContent = `- Rs. ${discountAmount}`; } 
-  else { discountRow.style.display = 'none'; discountAmount = 0; }
+  document.getElementById('billSubtotal').textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
 
-  totalSpan.textContent = `Rs. ${(subtotal - discountAmount + shippingFee).toLocaleString('en-IN')}`;
+  if (appliedCoupon) { 
+    discountAmount = Math.round(subtotal * (appliedCoupon.discount_percent / 100)); 
+    document.getElementById('billDiscountRow').style.display = 'flex'; 
+    document.getElementById('billDiscount').textContent = `- Rs. ${discountAmount.toLocaleString('en-IN')}`; 
+  } 
+  else { document.getElementById('billDiscountRow').style.display = 'none'; discountAmount = 0; }
+
+  const finalTotal = subtotal - discountAmount + shippingFee;
+  document.getElementById('billTotal').textContent = `Rs. ${finalTotal.toLocaleString('en-IN')}`;
+  document.getElementById('stickyTotal').textContent = `Rs. ${finalTotal.toLocaleString('en-IN')}`;
 }
 
 document.getElementById('cDistrict').addEventListener('change', renderCart);
 window.changeQty = function(index, change) { cart[index].quantity += change; if (cart[index].quantity <= 0) cart.splice(index, 1); localStorage.setItem('uma_cart', JSON.stringify(cart)); renderCart(); }
 window.removeItem = function(index) { cart.splice(index, 1); localStorage.setItem('uma_cart', JSON.stringify(cart)); renderCart(); }
 
-window.applyCoupon = async function(codeFromChip) {
-  let code = typeof codeFromChip === 'string' ? codeFromChip.toUpperCase() : document.getElementById('couponInput').value.trim().toUpperCase();
+window.applyCoupon = async function() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
   if (!code) return;
+
   const { data, error } = await supabaseClient.from('coupons').select('*').eq('code', code).eq('is_active', true).single();
-  if (error || !data) { alert('Invalid coupon.'); appliedCoupon = null; renderCart(); } 
-  else { appliedCoupon = data; alert(`Coupon ${data.code} applied!`); renderCart(); }
+  
+  if (error || !data) { 
+    showToast('Invalid or expired voucher.', 'error'); 
+    appliedCoupon = null; 
+    renderCart(); 
+  } 
+  else { 
+    appliedCoupon = data; 
+    showToast(`Voucher applied! You saved ${data.discount_percent}%.`, 'success'); 
+    renderCart(); 
+  }
 }
 
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const district = document.getElementById('cDistrict').value;
-  if (!district) { alert('Please select district.'); return; }
+  if (!district) { showToast('Please select district.', 'error'); return; }
+
+  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+  let txnId = null;
+
+  if (paymentMethod === 'Fonepay QR') {
+    txnId = document.getElementById('txnId').value.trim();
+    if (!txnId) { showToast('Please enter the Transaction ID after payment.', 'error'); return; }
+  }
 
   document.getElementById('loadingOverlay').style.display = 'flex';
   const name = document.getElementById('cName').value;
   const phone = document.getElementById('cPhone').value;
   const address = document.getElementById('cAddress').value;
   const fullAddress = `${address}, ${district}`;
-  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+  
   const finalTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) - discountAmount + shippingFee;
   localStorage.setItem('uma_user_info', JSON.stringify({ name, phone, address, district }));
 
   try {
-    const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ customer_name: name, phone: phone, address: fullAddress, total_amount: finalTotal, payment_method: paymentMethod, customer_email: currentUser ? currentUser.email : 'guest' }]).select();
+    const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ 
+      customer_name: name, 
+      phone: phone, 
+      address: fullAddress, 
+      total_amount: finalTotal, 
+      payment_method: paymentMethod, 
+      customer_email: currentUser ? currentUser.email : 'guest',
+      transaction_id: txnId 
+    }]).select();
 
     if (orderError) throw new Error(orderError.message);
 
@@ -224,12 +272,12 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     window.location.href = `/store/success?id=${orderData[0].id}`;
 
   } catch (error) {
-    alert('Order failed: ' + error.message);
+    showToast('Order failed: ' + error.message, 'error');
     document.getElementById('loadingOverlay').style.display = 'none';
   }
 });
 
-loadAvailableCoupons(); renderCart();
+renderCart();
 </script>
 </body>
 </html>
