@@ -37,7 +37,12 @@
   </div>
 
   <h2 class="section-title">Trending Products</h2>
-  <div id="storeProducts" class="product-grid"></div>
+  <div id="storeProducts" class="product-grid">
+    <div class="skeleton" style="aspect-ratio: 3/4; width: 100%;"></div>
+    <div class="skeleton" style="aspect-ratio: 3/4; width: 100%;"></div>
+    <div class="skeleton" style="aspect-ratio: 3/4; width: 100%;"></div>
+    <div class="skeleton" style="aspect-ratio: 3/4; width: 100%;"></div>
+  </div>
   <button id="loadMoreBtn" onclick="loadMoreProducts()" style="display: none; width: 100%; padding: 15px; background: var(--bg-subtle); color: var(--text-main); border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 20px;">Load More</button>
 </div>
 
@@ -145,7 +150,10 @@ function renderProducts(list) {
   if (list.length === 0) { grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">No products found.</p>'; loadMoreBtn.style.display = 'none'; return; }
   const toDisplay = list.slice(0, displayedProducts);
   toDisplay.forEach(p => {
-    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200'; const isWishlisted = wishlist.includes(p.id);
+    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200'; 
+    const hoverImg = p.images && p.images.length > 1 ? p.images[1] : imageUrl;
+    const isWishlisted = wishlist.includes(p.id);
+    
     let discountHtml = '', mrpHtml = '';
     if (p.mrp && p.mrp > p.price) { 
       const discountPercent = Math.round(((p.mrp - p.price) / p.mrp) * 100); 
@@ -156,7 +164,7 @@ function renderProducts(list) {
     grid.innerHTML += `
       <div class="product-card">
         <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(event, ${p.id}, this)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
-        <a href="product?id=${p.id}" style="text-decoration: none; color: inherit;">
+        <a href="product?id=${p.id}" style="text-decoration: none; color: inherit;" onmouseover="this.querySelector('img').src='${hoverImg}'" onmouseout="this.querySelector('img').src='${imageUrl}'">
           <img src="${imageUrl}" alt="${p.name}">
           <div class="product-info">
             <h3>${p.name}</h3>

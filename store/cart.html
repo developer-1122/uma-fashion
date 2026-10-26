@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#FFFFFF">
 <title>Cart - Uma's Fashion Wear</title>
-<link rel="manifest" href="/store/manifest.json">
-<!-- CSS ABSOLUTE PATH -->
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="/store/style.css">
 </head>
 <body>
@@ -21,6 +20,22 @@
 </header>
 
 <div class="container" style="margin-top: 20px;">
+  
+  <div class="progress-bar-container" id="checkoutProgress">
+    <div class="progress-step active">
+      <div class="progress-dot">1</div>
+      <span>Cart</span>
+    </div>
+    <div class="progress-step active">
+      <div class="progress-dot">2</div>
+      <span>Address</span>
+    </div>
+    <div class="progress-step">
+      <div class="progress-dot">3</div>
+      <span>Payment</span>
+    </div>
+  </div>
+
   <div id="cartItems" class="cart-container"></div>
 
   <div class="checkout-box" id="checkoutBox" style="display: none;">
@@ -82,10 +97,9 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- JS ABSOLUTE PATH -->
-<script src="/shared/supabase.js"></script>
+<script src="../shared/supabase.js"></script>
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/store/sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('dark-mode');
 
 let cart = JSON.parse(localStorage.getItem('uma_cart')) || [];
@@ -130,10 +144,10 @@ function renderCart() {
 
   if (cart.length === 0) {
     itemsDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">Your cart is empty.</p>';
-    checkoutBox.style.display = 'none'; return;
+    checkoutBox.style.display = 'none'; document.getElementById('checkoutProgress').style.display = 'none'; return;
   }
 
-  checkoutBox.style.display = 'block';
+  checkoutBox.style.display = 'block'; document.getElementById('checkoutProgress').style.display = 'flex';
 
   cart.forEach((item, index) => {
     subtotal += item.price * item.quantity;
