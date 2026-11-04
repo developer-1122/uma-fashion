@@ -21,6 +21,11 @@
 
 <div class="container" style="margin-top: 20px;">
   
+  <div id="freeDeliveryBar" class="free-delivery-progress" style="display: none;">
+    <p id="freeDeliveryText">Add Rs. 2000 more to get Free Delivery!</p>
+    <div class="progress-track"><div id="freeDeliveryFill" class="progress-fill"></div></div>
+  </div>
+
   <div id="cartItems" class="cart-container"></div>
 
   <div id="checkoutBox" style="display: none;">
@@ -101,6 +106,7 @@ if (localStorage.getItem('uma_theme') === 'dark') document.body.classList.add('d
 
 let cart = JSON.parse(localStorage.getItem('uma_cart')) || [];
 let appliedCoupon = null; let discountAmount = 0; let shippingFee = 0; let currentUser = null;
+const FREE_DELIVERY_THRESHOLD = 2000;
 
 function showToast(message, type = 'success') {
   const container = document.getElementById('toastContainer');
@@ -132,15 +138,16 @@ function renderCart() {
   const itemsDiv = document.getElementById('cartItems');
   const checkoutBox = document.getElementById('checkoutBox');
   const stickyBar = document.getElementById('stickyCheckoutBar');
+  const freeDeliveryBar = document.getElementById('freeDeliveryBar');
   
   itemsDiv.innerHTML = ''; let subtotal = 0;
 
   if (cart.length === 0) {
     itemsDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">Your cart is empty.</p>';
-    checkoutBox.style.display = 'none'; stickyBar.style.display = 'none'; return;
+    checkoutBox.style.display = 'none'; stickyBar.style.display = 'none'; freeDeliveryBar.style.display = 'none'; return;
   }
 
-  checkoutBox.style.display = 'block'; stickyBar.style.display = 'block';
+  checkoutBox.style.display = 'block'; stickyBar.style.display = 'block'; freeDeliveryBar.style.display = 'block';
 
   cart.forEach((item, index) => {
     subtotal += item.price * item.quantity;
@@ -162,12 +169,31 @@ function renderCart() {
       </div>`;
   });
 
-  const district = document.getElementById('cDistrict').value;
-  const ktmValley = ['Kathmandu', 'Lalitpur', 'Bhaktapur'];
+  // Free Delivery Logic
+  const progressFill = document.getElementById('freeDeliveryFill');
+  const progressText = document.getElementById('freeDeliveryText');
   
-  if (ktmValley.includes(district)) { shippingFee = 0; document.getElementById('billShipping').textContent = 'Free'; document.getElementById('billShipping').style.color = '#10B981'; } 
-  else if (district === "") { shippingFee = 0; document.getElementById('billShipping').textContent = 'Select District'; document.getElementById('billShipping').style.color = '#EF4444'; } 
-  else { shippingFee = 220; document.getElementById('billShipping').textContent = 'Rs. 220'; document.getElementById('billShipping').style.color = 'var(--text-main)'; }
+  if (subtotal >= FREE_DELIVERY_THRESHOLD) {
+    progressFill.style.width = '100%';
+    progressText.innerHTML = '🎉 You unlocked <strong>Free Delivery</strong>!';
+    progressText.style.color = '#10B981';
+    shippingFee = 0;
+    document.getElementById('billShipping').textContent = 'Free';
+    document.getElementById('billShipping').style.color = '#10B981';
+  } else {
+    const remaining = FREE_DELIVERY_THRESHOLD - subtotal;
+    const percent = (subtotal / FREE_DELIVERY_THRESHOLD) * 100;
+    progressFill.style.width = `${percent}%`;
+    progressText.innerHTML = `Add <strong>Rs. ${remaining.toLocaleString('en-IN')}</strong> more to get Free Delivery!`;
+    progressText.style.color = 'var(--text-main)';
+    
+    // Normal Shipping Logic (if not reached threshold)
+    const district = document.getElementById('cDistrict').value;
+    const ktmValley = ['Kathmandu', 'Lalitpur', 'Bhaktapur'];
+    if (ktmValley.includes(district)) { shippingFee = 0; document.getElementById('billShipping').textContent = 'Free'; document.getElementById('billShipping').style.color = '#10B981'; } 
+    else if (district === "") { shippingFee = 0; document.getElementById('billShipping').textContent = 'Select District'; document.getElementById('billShipping').style.color = '#EF4444'; } 
+    else { shippingFee = 220; document.getElementById('billShipping').textContent = 'Rs. 220'; document.getElementById('billShipping').style.color = 'var(--text-main)'; }
+  }
 
   document.getElementById('billSubtotal').textContent = `Rs. ${subtotal.toLocaleString('en-IN')}`;
 
@@ -215,12 +241,11 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
   const phone = document.getElementById('cPhone').value;
   const address = document.getElementById('cAddress').value;
   const fullAddress = `${address}, ${district}`;
-  const paymentMethod = 'Cash on Delivery';
   const finalTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) - discountAmount + shippingFee;
   localStorage.setItem('uma_user_info', JSON.stringify({ name, phone, address, district }));
 
   try {
-    const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ customer_name: name, phone: phone, address: fullAddress, total_amount: finalTotal, payment_method: paymentMethod, customer_email: currentUser ? currentUser.email : 'guest' }]).select();
+    const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ customer_name: name, phone: phone, address: fullAddress, total_amount: finalTotal, payment_method: 'Cash on Delivery', customer_email: currentUser ? currentUser.email : 'guest' }]).select();
 
     if (orderError) throw new Error(orderError.message);
 

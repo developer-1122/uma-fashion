@@ -6,7 +6,13 @@
 <title>Products - Uma's Fashion Wear</title>
 <link rel="stylesheet" href="../shared/style.css">
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<style>.search-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 15px; outline: none; } .csv-btn { background: #2196F3; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }</style>
+<style>
+.search-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; font-size: 15px; outline: none; }
+.csv-btn { background: #2196F3; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+.filter-row { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
+.filter-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.filter-btn.active { background: #1C3B2D; color: white; border-color: #1C3B2D; }
+</style>
 </head>
 <body>
 <div class="dashboard">
@@ -37,6 +43,13 @@
 
     <h2 style="margin-top: 30px;">All Products</h2>
     <input type="text" id="searchProduct" class="search-box" placeholder="Search products by name..." oninput="filterAdminProducts()">
+    
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setAdminFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setAdminFilter('low-stock', this)">Low Stock</button>
+      <button class="filter-btn" onclick="setAdminFilter('out-of-stock', this)">Out of Stock</button>
+    </div>
+
     <p id="loadingText" style="color: #666; margin-bottom: 15px;">Loading products...</p>
     <div id="productList"></div>
   </main>
@@ -47,7 +60,7 @@
 supabaseClient.auth.getSession().then(({ data: { session } }) => { if (!session || session.user.email !== 'donnhero6@gmail.com') window.location.href = 'index.html'; });
 document.getElementById('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
 
-let currentImages = []; let allProductsData = []; let categoriesList = [];
+let currentImages = []; let allProductsData = []; let categoriesList = []; let currentAdminFilter = 'all';
 
 async function loadCategories() {
   const { data } = await supabaseClient.from('categories').select('*'); const select = document.getElementById('pCategory'); select.innerHTML = '<option value="">Select Category</option>';
@@ -124,11 +137,24 @@ async function loadProducts() {
   allProductsData = data || []; filterAdminProducts();
 }
 
+window.setAdminFilter = function(filter, btn) {
+  currentAdminFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterAdminProducts();
+}
+
 window.filterAdminProducts = function() {
   const query = document.getElementById('searchProduct').value.toLowerCase(); const list = document.getElementById('productList'); const loading = document.getElementById('loadingText');
   list.innerHTML = ''; loading.style.display = 'none';
-  const filtered = allProductsData.filter(p => p.name.toLowerCase().includes(query));
+  
+  let filtered = allProductsData.filter(p => p.name.toLowerCase().includes(query));
+
+  if (currentAdminFilter === 'low-stock') filtered = filtered.filter(p => p.stock > 0 && p.stock <= 5);
+  else if (currentAdminFilter === 'out-of-stock') filtered = filtered.filter(p => p.stock === 0);
+
   if (filtered.length === 0) { list.innerHTML = '<p style="color: #666;">No products found.</p>'; return; }
+  
   filtered.forEach(p => {
     const img = p.images && p.images.length > 0 ? p.images[0] : 'https://picsum.photos/200'; const catName = p.categories ? p.categories.name : 'No Category'; const mrpText = p.mrp ? `<strike>Rs. ${parseFloat(p.mrp).toLocaleString('en-IN')}</strike>` : '';
     list.innerHTML += `
@@ -138,25 +164,10 @@ window.filterAdminProducts = function() {
             <h3>${p.name} ${p.tag ? `<span style="background:#C59B5F; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">${p.tag}</span>` : ''}</h3>
             <p>Rs. ${parseFloat(p.price).toLocaleString('en-IN')} ${mrpText} | Stock: ${p.stock} | ${catName}</p>
         </div>
-        <button onclick="cloneProduct(${p.id})" style="background: #FFF8E1; color: #B45309; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Clone</button>
         <button onclick='editProduct(${JSON.stringify(p)})' style="background: #E8F0EC; color: #1C3B2D; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin-right: 5px; font-weight: bold;">Edit</button>
         <button onclick="deleteProduct(${p.id})" style="background: #ffebee; color: #f44336; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">Delete</button>
       </div>`;
   });
-}
-
-window.cloneProduct = async function(id) {
-  const p = allProductsData.find(item => item.id === id);
-  if (!p) return;
-  
-  const cloneData = {
-    name: p.name + ' (Copy)', price: p.price, mrp: p.mrp, tag: p.tag, category_id: p.category_id,
-    stock: p.stock, description: p.description, sizes: p.sizes, colors: p.colors, images: p.images
-  };
-  
-  const { error } = await supabaseClient.from('products').insert([cloneData]);
-  if (error) alert('Error cloning: ' + error.message);
-  else { alert('Product cloned successfully!'); loadProducts(); }
 }
 
 window.editProduct = function(p) {
