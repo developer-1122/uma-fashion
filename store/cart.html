@@ -6,8 +6,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <title>Cart - Uma's Fashion Wear</title>
 <link rel="manifest" href="manifest.json">
-<!-- Added ?v=2 to force browsers to load the latest CSS -->
-<link rel="stylesheet" href="/store/style.css?v=2">
+<link rel="stylesheet" href="/store/style.css">
 </head>
 <body>
 <header>
@@ -61,17 +60,7 @@
         
         <h3 style="margin: 20px 0 15px;">Payment Method</h3>
         <div class="payment-options">
-          <label class="pay-option"><input type="radio" name="payment" value="Cash on Delivery" checked onchange="toggleQR()"><span style="flex: 1;">Cash on Delivery</span></label>
-          <label class="pay-option"><input type="radio" name="payment" value="eSewa" onchange="toggleQR()"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Esewa_Logo.svg/256px-Esewa_Logo.svg.png" alt="eSewa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #60bb46; font-weight: 800;">eSewa</span></label>
-          <label class="pay-option"><input type="radio" name="payment" value="Khalti" onchange="toggleQR()"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Khalti_Logo.svg/256px-Khalti_Logo.svg.png" alt="Khalti" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display: none; color: #5c2d91; font-weight: 800;">Khalti</span></label>
-          <label class="pay-option"><input type="radio" name="payment" value="Fonepay QR" onchange="toggleQR()"><span style="flex: 1; font-weight: 700;">Pay via Fonepay QR</span></label>
-        </div>
-
-        <div id="qrSection" class="qr-container">
-          <p>Scan this QR with any Bank App or Fonepay</p>
-          <img src="/store/qr.png" alt="Fonepay QR Code">
-          <p style="margin-top: 10px;">After payment, enter the Transaction ID below:</p>
-          <input type="text" id="txnId" placeholder="Enter Transaction ID">
+          <label class="pay-option"><input type="radio" name="payment" value="Cash on Delivery" checked><span style="flex: 1;">Cash on Delivery</span></label>
         </div>
 
         <button type="submit" id="formSubmitBtn" style="display: none;"></button>
@@ -132,13 +121,6 @@ supabaseClient.auth.getSession().then(({ data: { session } }) => {
     }
   }
 });
-
-function toggleQR() {
-  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-  const qrSection = document.getElementById('qrSection');
-  if (paymentMethod === 'Fonepay QR') { qrSection.style.display = 'block'; } 
-  else { qrSection.style.display = 'none'; }
-}
 
 function getDeliveryDate() {
   const date = new Date();
@@ -228,33 +210,17 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
   const district = document.getElementById('cDistrict').value;
   if (!district) { showToast('Please select district.', 'error'); return; }
 
-  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-  let txnId = null;
-
-  if (paymentMethod === 'Fonepay QR') {
-    txnId = document.getElementById('txnId').value.trim();
-    if (!txnId) { showToast('Please enter the Transaction ID after payment.', 'error'); return; }
-  }
-
   document.getElementById('loadingOverlay').style.display = 'flex';
   const name = document.getElementById('cName').value;
   const phone = document.getElementById('cPhone').value;
   const address = document.getElementById('cAddress').value;
   const fullAddress = `${address}, ${district}`;
-  
+  const paymentMethod = 'Cash on Delivery';
   const finalTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) - discountAmount + shippingFee;
   localStorage.setItem('uma_user_info', JSON.stringify({ name, phone, address, district }));
 
   try {
-    const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ 
-      customer_name: name, 
-      phone: phone, 
-      address: fullAddress, 
-      total_amount: finalTotal, 
-      payment_method: paymentMethod, 
-      customer_email: currentUser ? currentUser.email : 'guest',
-      transaction_id: txnId 
-    }]).select();
+    const { data: orderData, error: orderError } = await supabaseClient.from('orders').insert([{ customer_name: name, phone: phone, address: fullAddress, total_amount: finalTotal, payment_method: paymentMethod, customer_email: currentUser ? currentUser.email : 'guest' }]).select();
 
     if (orderError) throw new Error(orderError.message);
 
